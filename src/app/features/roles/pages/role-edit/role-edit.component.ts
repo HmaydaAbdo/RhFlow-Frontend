@@ -128,7 +128,7 @@ export class RoleEditComponent implements OnInit {
         next: (created) => {
           this.notification.success('Rôle créé avec succès');
           this.saving = false;
-          this.router.navigate(['/roles', created.roleId]);
+          this.router.navigate(['/roles']);
         },
         error: () => (this.saving = false),
       });
@@ -140,6 +140,7 @@ export class RoleEditComponent implements OnInit {
           this.role = updated;
           this.notification.success('Rôle mis à jour');
           this.saving = false;
+          this.router.navigate(['/roles']);
         },
         error: () => (this.saving = false),
       });
