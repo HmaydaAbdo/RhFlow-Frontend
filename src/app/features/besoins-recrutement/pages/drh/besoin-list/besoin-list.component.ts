@@ -273,7 +273,7 @@ export class BesoinListComponent implements OnInit {
     this.directionService.loadDirectionsPage(request)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: result => {
+        next: (result: PageResponse<DirectionResponse>) => {
           this.directions          = [...this.directions, ...result.content];
           this.directionTotalPages = result.page.totalPages;
           this.directionPage++;

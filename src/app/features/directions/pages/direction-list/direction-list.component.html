@@ -63,24 +63,27 @@
       </ng-template>
 
       <ng-template pTemplate="footer">
-        <div *ngIf="directorLoading" class="director-loading-footer">
-          <i class="fa fa-circle-notch fa-spin text-primary text-xs mr-2"></i>
-          <span class="text-xs text-color-secondary">Chargement...</span>
-        </div>
+        @if (directorLoading) {
+          <div class="director-loading-footer">
+            <i class="fa fa-circle-notch fa-spin text-primary text-xs mr-2"></i>
+            <span class="text-xs text-color-secondary">Chargement...</span>
+          </div>
+        }
       </ng-template>
 
     </p-dropdown>
 
-    <button
-      *ngIf="hasActiveFilters"
-      pButton
-      icon="fa fa-xmark"
-      severity="secondary"
-      [outlined]="true"
-      [rounded]="true"
-      pTooltip="Réinitialiser les filtres"
-      (click)="onClearFilters()">
-    </button>
+    @if (hasActiveFilters) {
+      <button
+        pButton
+        icon="fa fa-xmark"
+        severity="secondary"
+        [outlined]="true"
+        [rounded]="true"
+        pTooltip="Réinitialiser les filtres"
+        (click)="onClearFilters()">
+      </button>
+    }
 
   </div>
 

@@ -8,7 +8,6 @@ import {
   OnInit,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
@@ -38,7 +37,6 @@ const DROPDOWN_SCROLL_SEL = '.p-dropdown-items-wrapper';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     TableModule,
     ButtonModule,
@@ -50,7 +48,6 @@ const DROPDOWN_SCROLL_SEL = '.p-dropdown-items-wrapper';
   ],
   providers: [ConfirmationService],
   templateUrl: './direction-list.component.html',
-  styleUrl:    './direction-list.component.scss',
 })
 export class DirectionListComponent implements OnInit {
 

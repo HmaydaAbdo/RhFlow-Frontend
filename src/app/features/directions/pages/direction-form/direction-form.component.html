@@ -26,12 +26,14 @@
   </div>
 
   <!-- ── Loading Spinner ── -->
-  <div *ngIf="loadingData" class="flex justify-content-center align-items-center py-8">
-    <i class="fa fa-circle-notch fa-spin text-primary" style="font-size: 2rem"></i>
-  </div>
+  @if (loadingData) {
+    <div class="flex justify-content-center align-items-center py-8">
+      <i class="fa fa-circle-notch fa-spin text-primary" style="font-size: 2rem"></i>
+    </div>
+  }
 
   <!-- ── Form ── -->
-  <ng-container *ngIf="!loadingData">
+  @if (!loadingData) {
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
 
       <div class="form-card">
@@ -54,12 +56,14 @@
             [class.ng-invalid]="isFieldInvalid('nom')"
             [class.ng-dirty]="isFieldInvalid('nom')"
           />
-          <small class="p-error block mt-1" *ngIf="isFieldInvalid('nom')">
-            <i class="fa fa-circle-exclamation mr-1"></i>
-            <ng-container *ngIf="form.get('nom')?.errors?.['required']">Le nom est requis.</ng-container>
-            <ng-container *ngIf="form.get('nom')?.errors?.['minlength']">Minimum 2 caractères.</ng-container>
-            <ng-container *ngIf="form.get('nom')?.errors?.['maxlength']">Maximum 100 caractères.</ng-container>
-          </small>
+          @if (isFieldInvalid('nom')) {
+            <small class="p-error block mt-1">
+              <i class="fa fa-circle-exclamation mr-1"></i>
+              @if (form.get('nom')?.errors?.['required']) { Le nom est requis. }
+              @if (form.get('nom')?.errors?.['minlength']) { Minimum 2 caractères. }
+              @if (form.get('nom')?.errors?.['maxlength']) { Maximum 100 caractères. }
+            </small>
+          }
         </div>
 
         <p-divider styleClass="my-1"></p-divider>
@@ -89,21 +93,22 @@
 
             <!-- Selected item template -->
             <ng-template pTemplate="selectedItem" let-user>
-              <div class="flex align-items-center gap-2" *ngIf="user">
-                <div class="director-avatar">
-                  {{ user.fullName?.charAt(0)?.toUpperCase() }}
+              @if (user) {
+                <div class="flex align-items-center gap-2">
+                  <div class="director-avatar">
+                    {{ user.fullName?.charAt(0)?.toUpperCase() }}
+                  </div>
+                  <div class="flex flex-column">
+                    <span class="text-sm font-semibold">{{ user.fullName }}</span>
+                    <span class="text-xs text-color-secondary">{{ user.email }}</span>
+                  </div>
                 </div>
-                <div class="flex flex-column">
-                  <span class="text-sm font-semibold">{{ user.fullName }}</span>
-                  <span class="text-xs text-color-secondary">{{ user.email }}</span>
-                </div>
-              </div>
+              }
             </ng-template>
 
             <!-- Item template -->
             <ng-template pTemplate="item" let-user>
               <div class="flex align-items-center gap-2 py-1">
-
                 <div class="flex flex-column">
                   <span class="text-sm font-semibold line-height-2">{{ user.fullName }}</span>
                   <span class="text-xs text-color-secondary">{{ user.email }}</span>
@@ -111,28 +116,31 @@
               </div>
             </ng-template>
 
-            <!-- Footer: loading indicator -->
+            <!-- Footer: loading / empty indicator -->
             <ng-template pTemplate="footer">
-              <div *ngIf="directorLoading" class="director-loading-footer">
-                <i class="fa fa-circle-notch fa-spin text-primary text-xs mr-2"></i>
-                <span class="text-xs text-color-secondary">Chargement...</span>
-              </div>
-              <div *ngIf="!directorLoading && directors.length === 0" class="director-loading-footer">
-                <span class="text-xs text-color-secondary">Aucun directeur trouvé</span>
-              </div>
+              @if (directorLoading) {
+                <div class="director-loading-footer">
+                  <i class="fa fa-circle-notch fa-spin text-primary text-xs mr-2"></i>
+                  <span class="text-xs text-color-secondary">Chargement...</span>
+                </div>
+              } @else if (directors.length === 0) {
+                <div class="director-loading-footer">
+                  <span class="text-xs text-color-secondary">Aucun directeur trouvé</span>
+                </div>
+              }
             </ng-template>
 
           </p-dropdown>
 
-          <small class="p-error block mt-1" *ngIf="isFieldInvalid('directeurId')">
-            <i class="fa fa-circle-exclamation mr-1"></i>
-            <ng-container *ngIf="form.get('directeurId')?.errors?.['required']">Le directeur est requis.</ng-container>
-          </small>
+          @if (isFieldInvalid('directeurId')) {
+            <small class="p-error block mt-1">
+              <i class="fa fa-circle-exclamation mr-1"></i>
+              @if (form.get('directeurId')?.errors?.['required']) { Le directeur est requis. }
+            </small>
+          }
         </div>
 
         <p-divider styleClass="my-1"></p-divider>
-
-
 
       </div>
 
@@ -157,6 +165,6 @@
       </div>
 
     </form>
-  </ng-container>
+  }
 
 </div>
