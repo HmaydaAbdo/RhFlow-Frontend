@@ -72,17 +72,3 @@ Artifacts dans `dist/`.
 ```bash
 ng test          # tests unitaires Karma + Jasmine
 ```
-
-## Conventions projet
-
-- **Reactive Forms uniquement** — pas de `ngModel`
-- **Nouveau control flow** (`@if` / `@for` / `@switch`) — pas de `*ngIf` / `*ngFor`
-- **Pages d'édition unifiées** (une seule page pour create + edit), pas de dialogs par action
-- **Enums métier centralisés** (pas de string literal en dur — miroir strict du back)
-- **Gestion des subscriptions** : `DestroyRef` + `takeUntilDestroyed(this.destroyRef)`
-- **RBAC par rôle** (pas de permissions granulaires) : `ADMIN`, `DRH`, `DIRECTEUR`
-- **Pas de skeleton loaders** — on affiche un état vide ou un spinner minimaliste
-
-## Licence
-
-Projet privé — STAPORT SA.
