@@ -1,0 +1,97 @@
+<p-confirmDialog></p-confirmDialog>
+
+<div class="fadein animation-duration-400">
+
+  <!-- Header -->
+  <div class="flex align-items-center justify-content-between mb-3">
+    <div>
+      <h2 class="m-0 text-xl font-bold">Gestion des Rôles</h2>
+      <p class="mt-1 mb-0 text-color-secondary text-sm">{{ totalRecords }} rôle(s) au total</p>
+    </div>
+    <button pButton label="Nouveau rôle" icon="fa fa-plus" routerLink="/roles/new"></button>
+  </div>
+
+  <!-- Search (Reactive Forms) -->
+  <form [formGroup]="filtersForm" class="flex align-items-center gap-2 mb-3">
+    <span class="p-input-icon-left flex-1">
+      <i class="fa fa-magnifying-glass"></i>
+      <input
+        type="text"
+        pInputText
+        formControlName="keyword"
+        placeholder="Rechercher un rôle..."
+        class="w-full"
+      />
+    </span>
+    @if (hasActiveFilter) {
+      <button type="button" pButton icon="fa fa-xmark" severity="secondary"
+              (click)="onClearFilters()" pTooltip="Réinitialiser"></button>
+    }
+  </form>
+
+  <!-- Table -->
+  <p-table
+    [value]="roles"
+    [lazy]="true"
+    [paginator]="true"
+    [rows]="10"
+    [totalRecords]="totalRecords"
+    [loading]="loading"
+    [rowsPerPageOptions]="[5, 10, 25]"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="{first} - {last} sur {totalRecords}"
+    (onLazyLoad)="loadRoles($event)"
+    [sortField]="'id'"
+    [sortOrder]="1"
+    styleClass="p-datatable-sm"
+    [rowHover]="true">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="id" style="width: 100px">
+          ID <p-sortIcon field="id"></p-sortIcon>
+        </th>
+        <th pSortableColumn="roleName" style="width: 180px">
+          Nom <p-sortIcon field="roleName"></p-sortIcon>
+        </th>
+        <th>Description</th>
+        <th >Modifié le</th>
+        <th class="text-center">Actions</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-role>
+      <tr>
+        <td>{{ role.roleId }}</td>
+        <td>
+          <a class="font-semibold text-primary cursor-pointer no-underline hover:underline"
+             [routerLink]="['/roles', role.roleId]">
+            {{ role.roleName }}
+          </a>
+
+        </td>
+        <td class="text-color-secondary">{{ role.description || '—' }}</td>
+        <td>{{ role.updatedAt | date:'dd/MM/yyyy ' }}</td>
+        <td class="text-center">
+          <button pButton icon="fa fa-pen" severity="info" [rounded]="true" [text]="true"
+                  pTooltip="Éditer" tooltipPosition="left"
+                  [routerLink]="['/roles', role.roleId]"></button>
+          <button pButton icon="fa fa-trash" severity="danger" [rounded]="true" [text]="true"
+                  [pTooltip]="'Supprimer'"
+                  tooltipPosition="left"
+                  (click)="confirmDelete(role)"></button>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="5" class="text-center p-4 text-color-secondary">
+          Aucun rôle trouvé
+        </td>
+      </tr>
+    </ng-template>
+
+  </p-table>
+
+</div>

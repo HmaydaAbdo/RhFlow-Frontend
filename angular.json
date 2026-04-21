@@ -49,25 +49,44 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              {
+                "glob": "**/*",
+                "input": "node_modules/primeng/resources/themes/lara-dark-indigo",
+                "output": "theme-dark"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/primeng/resources/themes/lara-light-teal",
+                "output": "theme-light"
+              }
             ],
             "styles": [
+              "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
+              "node_modules/primeng/resources/primeng.min.css",
+              "node_modules/primeflex/primeflex.css",
               "src/styles.scss"
             ],
             "scripts": []
           },
           "configurations": {
             "production": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kb",
-                  "maximumError": "1mb"
+                  "maximumWarning": "1mb",
+                  "maximumError": "1.5mb"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumWarning": "8kb",
+                  "maximumError": "16kb"
                 }
               ],
               "outputHashing": "all"
@@ -109,7 +128,17 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              {
+                "glob": "lara-dark-indigo/**",
+                "input": "node_modules/primeng/resources/themes/",
+                "output": "/"
+              },
+              {
+                "glob": "lara-light-indigo/**",
+                "input": "node_modules/primeng/resources/themes/",
+                "output": "/"
+              }
             ],
             "styles": [
               "src/styles.scss"
@@ -119,5 +148,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": "2ff8a401-0387-487f-bfa4-6f219f33431d"
   }
 }

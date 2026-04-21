@@ -1,0 +1,152 @@
+// ═══════════════════════════════════════════════════════════════
+// RH FLOW — Design Tokens
+// Single source of truth for all design decisions.
+// Uses CSS Custom Properties so every component inherits them
+// automatically — no imports needed in component .scss files.
+// ═══════════════════════════════════════════════════════════════
+
+:root {
+
+  // ── Typography ──────────────────────────────────────────────
+  --font-app: 'Plus Jakarta Sans', sans-serif;
+
+  // Fluid type scale — scales smoothly between mobile & desktop
+  // No typography breakpoints needed anywhere in the app
+  --text-xs:   clamp(0.68rem, 1.4vw,  0.72rem);
+  --text-sm:   clamp(0.78rem, 1.7vw,  0.84rem);
+  --text-base: clamp(0.88rem, 2vw,    0.95rem);
+  --text-lg:   clamp(1rem,    2.4vw,  1.1rem);
+  --text-xl:   clamp(1.1rem,  3vw,    1.25rem);
+  --text-2xl:  clamp(1.3rem,  4vw,    1.6rem);
+  --text-3xl:  clamp(1.6rem,  5vw,    2.1rem);
+  --text-hero: clamp(2rem,    6vw,    3rem);
+
+  // ── Brand Palette ────────────────────────────────────────────
+  // Evolved teal — richer & more authoritative than PrimeNG default
+  --brand-darkest: #031b1a;  // deep bg, login screen
+  --brand-dark:    #042f2e;  // sidebar background
+  --brand-base:    #0f766e;  // primary action color
+  --brand-mid:     #0e9585;  // hover / intermediate
+  --brand-light:   #14b8a6;  // gradient endpoint, accents
+  --brand-pale:    #ccfbf1;  // tinted highlights
+  --brand-tint:    #f0fdfa;  // page ground color
+
+  // ── PrimeNG Primary Palette Override ────────────────────────
+  // Redefines lara-light-teal tokens → entire PrimeNG UI adapts
+  --primary-color:      #0f766e;
+  --primary-color-text: #ffffff;
+  --primary-50:         #f0fdfa;
+  --primary-100:        #ccfbf1;
+  --primary-200:        #99f6e4;
+  --primary-300:        #5eead4;
+  --primary-400:        #2dd4bf;
+  --primary-500:        #14b8a6;
+  --primary-600:        #0d9488;
+  --primary-700:        #0f766e;
+  --primary-800:        #115e59;
+  --primary-900:        #134e4a;
+
+  // ── Surface Scale ────────────────────────────────────────────
+  // Teal-tinted surfaces — everything feels intentional, not generic
+  --surface-ground:   #f0fdfa;
+  --surface-section:  #f0fdfa;
+  --surface-card:     #ffffff;
+  --surface-overlay:  #ffffff;
+  --surface-border:   #d1ede8;
+  --surface-hover:    #e4f5f2;
+
+  // Surface numeric shades (used by PrimeNG internally)
+  --surface-0:   #ffffff;
+  --surface-50:  #f0fdfa;
+  --surface-100: #e0f9f5;
+  --surface-200: #c4f0ea;
+  --surface-300: #9de8df;
+  --surface-400: #67d8cf;
+  --surface-500: #38bdb5;
+
+  // ── Text ─────────────────────────────────────────────────────
+  --text-color:           #0f2b28;   // near-black with teal undertone
+  --text-color-secondary: #4d7974;   // warm muted teal-gray
+
+  // ── Sidebar (dark teal) ──────────────────────────────────────
+  --sidebar-bg:          #042f2e;
+  --sidebar-border:      rgba(255, 255, 255, 0.07);
+  --sidebar-text:        rgba(255, 255, 255, 0.78);
+  --sidebar-text-muted:  rgba(255, 255, 255, 0.38);
+  --sidebar-hover:       rgba(255, 255, 255, 0.06);
+  --sidebar-active-bg:   rgba(20, 184, 166, 0.18);
+  --sidebar-active-text: #2dd4bf;
+  --sidebar-active-icon: #14b8a6;
+  --sidebar-section:     rgba(255, 255, 255, 0.28);
+
+  // ── Layout ───────────────────────────────────────────────────
+  --sidebar-w: 260px;
+  --topbar-h:  3.75rem;
+
+  // ── Border Radius ────────────────────────────────────────────
+  --radius-xs:  0.25rem;
+  --radius-sm:  0.375rem;
+  --radius:     0.625rem;
+  --radius-lg:  0.875rem;
+  --radius-xl:  1.125rem;
+  --radius-2xl: 1.5rem;
+
+  // ── Shadows (teal-tinted — not cold gray) ────────────────────
+  --shadow-xs: 0 1px 3px rgba(15, 43, 40, .05), 0 1px 2px rgba(15, 43, 40, .03);
+  --shadow-sm: 0 2px 8px rgba(15, 43, 40, .07);
+  --shadow:    0 4px 18px rgba(15, 43, 40, .09);
+  --shadow-lg: 0 8px 32px rgba(15, 43, 40, .13);
+  --shadow-brand: 0 4px 24px rgba(15, 118, 110, .28);
+
+  // ── Gradients ────────────────────────────────────────────────
+  --gradient:   linear-gradient(135deg, #14b8a6, #0f766e);
+  --gradient-r: linear-gradient(135deg, #0f766e, #14b8a6);
+
+  // ── Motion ───────────────────────────────────────────────────
+  --t:      180ms cubic-bezier(.4, 0, .2, 1);
+  --t-slow: 320ms cubic-bezier(.4, 0, .2, 1);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DARK THEME OVERRIDES
+// Applied when ThemeService adds .dark-theme to <html>.
+// html.dark-theme has higher specificity than :root so these win.
+// PrimeNG loads lara-dark-indigo via <link> — we sync our custom
+// surface/text vars here so the whole app stays consistent.
+// ═══════════════════════════════════════════════════════════════
+html.dark-theme {
+
+  // ── Surfaces ─────────────────────────────────────────────────
+  --surface-ground:   #061513;
+  --surface-section:  #061513;
+  --surface-card:     #0d2220;
+  --surface-overlay:  #0f2724;
+  --surface-border:   rgba(20, 184, 166, 0.12);
+  --surface-hover:    rgba(20, 184, 166, 0.07);
+
+  // Surface numeric shades (dark variants)
+  --surface-0:   #0d2220;
+  --surface-50:  #0f2724;
+  --surface-100: #133028;
+  --surface-200: #1a3d34;
+  --surface-300: #234d43;
+  --surface-400: #2d5e52;
+  --surface-500: #3a7062;
+
+  // ── Text ─────────────────────────────────────────────────────
+  --text-color:           #d4f0ec;
+  --text-color-secondary: #7bb8b3;
+
+  // ── Primary stays the same — teal works on dark bg ───────────
+  // (no overrides needed — light teal on dark surface = perfect)
+
+  // ── Tinted bg for badges/chips in dark mode ──────────────────
+  --primary-50:   rgba(20, 184, 166, 0.12);
+  --primary-100:  rgba(20, 184, 166, 0.18);
+
+  // ── Shadows (stronger on dark) ────────────────────────────────
+  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.3),  0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow:    0 4px 18px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+}

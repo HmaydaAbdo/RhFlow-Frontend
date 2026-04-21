@@ -1,0 +1,159 @@
+<p-toast position="top-right"></p-toast>
+
+<div class="lp-wrap">
+
+  <!-- ── Animated background ── -->
+  <div class="lp-bg" aria-hidden="true">
+    <div class="lp-orb lp-orb-1"></div>
+    <div class="lp-orb lp-orb-2"></div>
+    <div class="lp-orb lp-orb-3"></div>
+    <div class="lp-grid"></div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       LEFT PANEL — Branding
+  ══════════════════════════════════ -->
+  <aside class="lp-panel" aria-hidden="true">
+
+    <div class="lp-panel-brand">
+      <div class="lp-panel-orb">
+        <i class="fa fa-building"></i>
+      </div>
+      <div>
+        <div class="lp-panel-name"><span>RH</span> Flow</div>
+        <div class="lp-panel-tagline">Plateforme RH intelligente</div>
+      </div>
+    </div>
+
+    <div class="lp-panel-hero">
+      <div class="lp-panel-ai-badge">
+        <i class="fa fa-wand-magic-sparkles"></i>
+        Powered by AI
+      </div>
+      <h2 class="lp-panel-title">
+        Le recrutement,<br>sans friction
+      </h2>
+      <p class="lp-panel-sub">
+        De l'expression du besoin à la génération d'offre par IA,
+        chaque étape de votre processus est tracée et automatisée.
+      </p>
+    </div>
+
+    <div class="lp-panel-features">
+      <div class="lp-panel-feat" *ngFor="let f of features">
+        <div class="lp-panel-feat-icon">
+          <i [class]="f.icon"></i>
+        </div>
+        <div class="lp-panel-feat-text">
+          <span class="lp-panel-feat-label">{{ f.label }}</span>
+          <span class="lp-panel-feat-desc">{{ f.desc }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="lp-panel-footer">
+      <div class="lp-panel-dots" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ══════════════════════════════════
+       RIGHT PANEL — Form
+  ══════════════════════════════════ -->
+  <main class="lp-form-panel" role="main">
+
+    <div class="lp-card">
+
+      <!-- Mobile brand (hidden on desktop) -->
+      <div class="lp-mobile-brand">
+        <div class="lp-mobile-orb"><i class="fa fa-building"></i></div>
+        <span class="lp-mobile-name"><span>RH</span> Flow</span>
+      </div>
+
+      <!-- Heading -->
+      <div class="lp-head">
+        <h1>Bon retour</h1>
+        <p>Connectez-vous à votre espace de travail</p>
+      </div>
+
+      <!-- Form -->
+      <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="lp-form" novalidate>
+
+        <!-- Email -->
+        <div class="lp-field"
+             [class.lp-focused]="emailFocused"
+             [class.lp-error]="isFieldInvalid('email')">
+          <label class="lp-label" for="email">
+            <i class="fa fa-envelope"></i> Adresse e-mail
+          </label>
+          <div class="lp-input-wrap">
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="votre@email.com"
+              autocomplete="email"
+              (focus)="emailFocused = true"
+              (blur)="emailFocused = false"
+            />
+          </div>
+          <span class="lp-err" *ngIf="isFieldInvalid('email')">
+            <i class="fa fa-circle-exclamation"></i> Email invalide
+          </span>
+        </div>
+
+        <!-- Password -->
+        <div class="lp-field"
+             [class.lp-focused]="passwordFocused"
+             [class.lp-error]="isFieldInvalid('password')">
+          <label class="lp-label" for="password">
+            <i class="fa fa-lock"></i> Mot de passe
+          </label>
+          <div class="lp-input-wrap">
+            <input
+              id="password"
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              (focus)="passwordFocused = true"
+              (blur)="passwordFocused = false"
+            />
+            <button type="button" class="lp-eye"
+                    (click)="showPassword = !showPassword"
+                    tabindex="-1"
+                    [attr.aria-label]="showPassword ? 'Masquer' : 'Afficher'">
+              <i class="fa" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"></i>
+            </button>
+          </div>
+          <span class="lp-err" *ngIf="isFieldInvalid('password')">
+            <i class="fa fa-circle-exclamation"></i> Mot de passe requis
+          </span>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="lp-submit" [disabled]="loading">
+          <ng-container *ngIf="!loading">
+            <span>Se connecter</span>
+            <i class="fa fa-arrow-right lp-arrow"></i>
+          </ng-container>
+          <ng-container *ngIf="loading">
+            <i class="fa fa-circle-notch fa-spin"></i>
+            <span>Connexion…</span>
+          </ng-container>
+        </button>
+
+      </form>
+
+      <!-- Roles hint -->
+      <div class="lp-roles-hint">
+        <i class="fa fa-shield-halved"></i>
+        <span>Accès sécurisé par rôle : Admin · DRH · Directeur</span>
+      </div>
+
+    </div>
+  </main>
+
+</div>

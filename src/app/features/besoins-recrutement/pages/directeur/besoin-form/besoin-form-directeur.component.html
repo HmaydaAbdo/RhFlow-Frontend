@@ -1,0 +1,206 @@
+<div class="fadein animation-duration-400">
+
+  <!-- ── Breadcrumb ── -->
+  <div class="breadcrumb mb-4">
+    <a routerLink="/besoins-recrutement"><i class="fa fa-bullhorn mr-1"></i>Besoins en recrutement</a>
+    <i class="fa fa-chevron-right sep"></i>
+    <span class="current">{{ isEdit ? 'Modifier' : 'Nouveau besoin' }}</span>
+  </div>
+
+  <!-- ── Page Header ── -->
+  <div class="page-hero mb-4">
+    <div class="flex align-items-center gap-3">
+      <div class="hero-icon">
+        <i class="fa fa-{{ isEdit ? 'pen' : 'plus' }}"></i>
+      </div>
+      <div>
+        <h2 class="hero-title">{{ pageTitle }}</h2>
+        <p class="hero-sub">{{ isEdit ? 'Mettez à jour votre demande' : 'Exprimez votre besoin de recrutement' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Loading Spinner ── -->
+  <div *ngIf="loadingData" class="flex justify-content-center align-items-center py-8">
+    <i class="fa fa-circle-notch fa-spin text-primary" style="font-size: 2rem"></i>
+  </div>
+
+  <!-- ── Form ── -->
+  <ng-container *ngIf="!loadingData">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+      <!-- Section: Identification -->
+      <div class="form-card">
+        <div class="section-label"><i class="fa fa-file-lines"></i> Poste concerné</div>
+
+        <div class="field">
+          <label class="field-label" for="ficheDePoste">
+            Fiche de poste <span class="req">*</span>
+          </label>
+
+
+
+          <p-dropdown
+            id="ficheDePoste"
+            formControlName="ficheDePosteId"
+            [options]="ficheOptions"
+            optionLabel="intitulePoste"
+            optionValue="id"
+            placeholder="Sélectionner une fiche de poste"
+            [filter]="true"
+            [filterBy]="isAdminOrDrh ? 'intitulePoste,directionNom' : 'intitulePoste'"
+            [showClear]="true"
+            styleClass="w-full"
+            [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('ficheDePosteId')}">
+
+            <ng-template pTemplate="selectedItem" let-item>
+              <div class="flex align-items-center gap-2" *ngIf="item">
+                <i class="fa fa-file-lines text-primary text-xs"></i>
+                <span>{{ item.intitulePoste }}</span>
+                <span class="text-color-secondary text-xs ml-1">— {{ item.directionNom }}</span>
+              </div>
+            </ng-template>
+
+            <ng-template pTemplate="item" let-item>
+              <div>
+                <div class="font-semibold text-sm">{{ item.intitulePoste }}</div>
+                <div class="text-xs text-color-secondary mt-1">
+                  <i class="fa fa-building mr-1"></i>{{ item.directionNom }}
+                </div>
+              </div>
+            </ng-template>
+
+          </p-dropdown>
+          <small class="p-error block mt-1" *ngIf="isFieldInvalid('ficheDePosteId')">
+            La fiche de poste est obligatoire.
+          </small>
+        </div>
+      </div>
+
+      <!-- Section: Détails -->
+      <div class="form-card">
+        <div class="section-label"><i class="fa fa-sliders"></i> Détails de la demande</div>
+
+        <div class="grid">
+
+          <!-- Nombre de postes -->
+          <div class="col-12 md:col-4">
+            <div class="field">
+              <label class="field-label" for="nombrePostes">
+                Nombre de postes <span class="req">*</span>
+              </label>
+              <p-inputNumber
+                id="nombrePostes"
+                formControlName="nombrePostes"
+                [min]="1"
+                [max]="999"
+                [showButtons]="true"
+                buttonLayout="horizontal"
+                incrementButtonIcon="fa fa-plus"
+                decrementButtonIcon="fa fa-minus"
+                styleClass="w-full"
+                [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('nombrePostes')}">
+              </p-inputNumber>
+              <small class="p-error block mt-1" *ngIf="isFieldInvalid('nombrePostes')">
+                Indiquez un nombre entre 1 et 999.
+              </small>
+            </div>
+          </div>
+
+          <!-- Date souhaitée -->
+          <div class="col-12 md:col-4">
+            <div class="field">
+              <label class="field-label" for="dateSouhaitee">
+                Date souhaitée <span class="req">*</span>
+              </label>
+              <p-calendar
+                id="dateSouhaitee"
+                formControlName="dateSouhaitee"
+                dateFormat="dd/mm/yy"
+                placeholder="jj/mm/aaaa"
+                [showIcon]="true"
+                icon="fa fa-calendar"
+                styleClass="w-full"
+                [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('dateSouhaitee')}">
+              </p-calendar>
+              <small class="p-error block mt-1" *ngIf="isFieldInvalid('dateSouhaitee')">
+                La date souhaitée est obligatoire.
+              </small>
+              <small class="p-error block mt-1" *ngIf="form.get('dateSouhaitee')?.hasError('minDate')">
+                La date ne peut pas être antérieure à aujourd'hui.
+              </small>
+            </div>
+          </div>
+
+          <!-- Priorité -->
+          <div class="col-12 md:col-4">
+            <div class="field">
+              <label class="field-label">Priorité <span class="req">*</span></label>
+              <p-selectButton
+                formControlName="priorite"
+                [options]="prioriteOptions"
+                optionLabel="label"
+                optionValue="value"
+                styleClass="w-full priorite-select">
+              </p-selectButton>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Section: Justification -->
+      <div class="form-card">
+        <div class="section-label"><i class="fa fa-align-left"></i> Justification</div>
+
+        <div class="field">
+          <label class="field-label" for="justification">
+            Motif / Contexte <span class="req">*</span>
+            <span class="field-opt">(min. 10 caractères)</span>
+          </label>
+          <textarea
+            id="justification"
+            pInputTextarea
+            formControlName="justification"
+            [autoResize]="true"
+            rows="5"
+            placeholder="Décrivez le contexte de votre besoin : départ prévu, croissance d'activité, nouveau projet..."
+            class="w-full"
+            [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('justification')}">
+          </textarea>
+          <div class="flex justify-content-between mt-1">
+            <small class="p-error" *ngIf="isFieldInvalid('justification')">
+              La justification est obligatoire (min. 10 caractères).
+            </small>
+            <small class="text-color-secondary ml-auto">
+              {{ form.get('justification')?.value?.length ?? 0 }} / 2000
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Action Bar ── -->
+      <div class="action-bar">
+        <button
+          type="button"
+          pButton
+          label="Annuler"
+          icon="fa fa-times"
+          severity="secondary"
+
+          (click)="onCancel()">
+        </button>
+        <button
+          type="submit"
+          pButton
+          [label]="isEdit ? 'Enregistrer les modifications' : 'Créer le besoin'"
+          [icon]="submitting ? 'fa fa-spinner fa-spin' : (isEdit ? 'fa fa-floppy-disk' : 'fa fa-check')"
+          [loading]="submitting"
+          [disabled]="submitting">
+        </button>
+      </div>
+
+    </form>
+  </ng-container>
+
+</div>

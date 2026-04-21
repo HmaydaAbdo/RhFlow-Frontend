@@ -1,0 +1,29 @@
+<div class="fadein animation-duration-300">
+
+  <!-- Welcome hero -->
+  <div class="page-hero mb-4">
+    <div class="flex align-items-center gap-3">
+      <div class="hero-icon">
+        <i class="fa fa-house"></i>
+      </div>
+      <div>
+        <h2 class="hero-title">Bonjour, {{ fullName }} 👋</h2>
+        <p class="hero-sub">Bienvenue sur votre espace de travail RH</p>
+      </div>
+    </div>
+    <div class="hidden md:flex align-items-center gap-2">
+      <span class="count-badge">
+        <i class="fa fa-calendar-day"></i>
+        {{ today | date:'EEEE d MMMM yyyy' : '' : 'fr' }}
+      </span>
+    </div>
+  </div>
+
+
+
+  <!-- ── Besoin Recrutement Stats Widget (DRH / ADMIN only) ── -->
+  <div class="app-card p-4" *ngIf="showBesoinWidget">
+    <app-besoin-stats-widget></app-besoin-stats-widget>
+  </div>
+
+</div>

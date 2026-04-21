@@ -1,0 +1,219 @@
+<p-confirmDialog></p-confirmDialog>
+
+<div class="fadein animation-duration-400">
+
+  <div class="page-hero mb-4">
+    <div class="flex align-items-center gap-3">
+      <div class="hero-icon">
+        <i class="fa fa-file-lines"></i>
+      </div>
+      <div>
+        <h2 class="hero-title">Fiches de Poste</h2>
+        <p class="hero-sub">Définissez les missions et les compétences par poste</p>
+      </div>
+    </div>
+    <div class="flex align-items-center gap-2 flex-wrap">
+      <span class="count-badge">
+        <i class="fa fa-layer-group mr-1 text-xs"></i>{{ totalRecords }} fiche(s)
+      </span>
+      @if (canAddOrEdit()){
+        <button
+          pButton
+          icon="fa fa-plus"
+          label="Nouvelle fiche"
+          (click)="goToCreate()">
+        </button>
+      }
+
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <span class="p-input-icon-left" style="flex: 1; min-width: 200px">
+      <i class="fa fa-magnifying-glass"></i>
+      <input
+        type="text"
+        pInputText
+        [(ngModel)]="keyword"
+        placeholder="Rechercher un poste..."
+        class="w-full"
+        (ngModelChange)="onSearchChange($event)"
+      />
+    </span>
+
+    <p-dropdown
+      [options]="directions"
+      [(ngModel)]="selectedDirectionId"
+      optionLabel="nom"
+      optionValue="id"
+      placeholder="Toutes les directions"
+      [showClear]="true"
+      [filter]="true"
+      [lazy]="true"
+      appendTo="body"
+      styleClass="filter-dropdown"
+      (onShow)="onDirectionShow()"
+      (onHide)="onDirectionHide()"
+      (onFilter)="onDirectionFilter($event)"
+      (onChange)="onDirectionFilterChange()">
+
+      <ng-template pTemplate="selectedItem" let-item>
+        <div class="flex align-items-center gap-2" *ngIf="item">
+          <i class="fa fa-building text-primary text-xs"></i>
+          <span>{{ item.nom }}</span>
+        </div>
+      </ng-template>
+
+      <ng-template pTemplate="item" let-item>
+        <div class="flex align-items-center gap-2">
+          <i class="fa fa-building text-color-secondary text-xs"></i>
+          <span>{{ item.nom }}</span>
+        </div>
+      </ng-template>
+
+      <ng-template pTemplate="footer">
+        <div *ngIf="directionLoading" class="p-2 text-center border-top-1 surface-border">
+          <i class="fa fa-circle-notch fa-spin text-primary mr-2"></i>
+          <span class="text-xs text-color-secondary">Chargement...</span>
+        </div>
+        <div *ngIf="!directionLoading && directions.length === 0" class="p-2 text-center border-top-1 surface-border">
+          <span class="text-xs text-color-secondary">Aucune direction trouvée</span>
+        </div>
+      </ng-template>
+    </p-dropdown>
+
+    <p-dropdown
+      [options]="niveauEtudesOptions"
+      [(ngModel)]="selectedNiveauEtudes"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="Niveau d'études"
+      [showClear]="true"
+      appendTo="body"
+      styleClass="filter-dropdown"
+      (onChange)="onNiveauEtudesFilterChange()">
+    </p-dropdown>
+
+    <button
+      *ngIf="hasActiveFilters"
+      pButton
+      icon="fa fa-filter-circle-xmark"
+      severity="secondary"
+      [outlined]="true"
+      [rounded]="true"
+      pTooltip="Effacer les filtres"
+      (click)="onClearFilters()">
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="flex justify-content-center align-items-center py-8">
+    <i class="fa fa-circle-notch fa-spin text-primary" style="font-size: 2rem"></i>
+  </div>
+
+  <ng-container *ngIf="!loading">
+
+    <div class="grid" *ngIf="fiches.length > 0; else emptyState">
+      <div class="col-12 md:col-6 lg:col-4" *ngFor="let fiche of fiches; trackBy: trackByFiche">
+        <div class="fp-card">
+
+          <!-- Gradient header -->
+          <div class="fp-header">
+            <div class="fp-header-icon">
+              <i class="fa fa-file-lines"></i>
+            </div>
+            <div class="fp-header-text">
+              <h3 class="fp-title" [pTooltip]="fiche.intitulePoste" tooltipPosition="top">
+                {{ fiche.intitulePoste }}
+              </h3>
+              <span class="fp-direction">
+                <i class="fa fa-building"></i>
+                {{ fiche.directionNom }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Attribute pill chips -->
+          <div class="fp-chips">
+
+            <span class="fp-chip fp-chip--niveau">
+              <i class="fa fa-graduation-cap"></i>
+              {{ getEtudesLabel(fiche.niveauEtudes) }}
+            </span>
+
+            <span class="fp-chip fp-chip--exp">
+              <i class="fa fa-briefcase"></i>
+              {{ fiche.anneesExperience }} an(s)
+            </span>
+
+            <span *ngIf="fiche.domaineFormation" class="fp-chip fp-chip--formation">
+              <i class="fa fa-book-open"></i>
+              {{ fiche.domaineFormation }}
+            </span>
+
+          </div>
+
+          <!-- Actions footer -->
+          <div class="fp-actions">
+            <button
+              pButton
+              icon="fa fa-eye"
+              severity="info"
+              [rounded]="true"
+              [text]="true"
+              pTooltip="Détails"
+              tooltipPosition="top"
+              (click)="goToEdit(fiche)">
+            </button>
+
+            @if (canAddOrEdit()){
+              <button
+                pButton
+                icon="fa fa-trash"
+                severity="danger"
+                [rounded]="true"
+                [text]="true"
+                pTooltip="Supprimer"
+                tooltipPosition="top"
+                (click)="confirmDelete(fiche)">
+              </button>
+            }
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <ng-template #emptyState>
+      <div class="empty-state text-center py-8">
+        <div class="empty-icon mb-4">
+          <i class="fa fa-file-circle-question text-6xl text-color-secondary opacity-50"></i>
+        </div>
+        <h3 class="mt-3 mb-1 font-bold">Aucune fiche de poste trouvée</h3>
+
+        <button
+          *ngIf="hasActiveFilters"
+          pButton
+          label="Effacer les filtres"
+          icon="fa fa-filter-circle-xmark"
+          severity="secondary"
+          [outlined]="true"
+          (click)="onClearFilters()">
+        </button>
+      </div>
+    </ng-template>
+
+  </ng-container>
+
+  <div class="paginator-card mt-0" *ngIf="totalRecords > 0">
+    <p-paginator
+      [totalRecords]="totalRecords"
+      [rows]="currentRequest.size"
+      [first]="currentRequest.page * currentRequest.size"
+      [rowsPerPageOptions]="[9, 18, 27]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="{first}–{last} sur {totalRecords}"
+      (onPageChange)="onPageChange($event)">
+    </p-paginator>
+  </div>
+
+</div>

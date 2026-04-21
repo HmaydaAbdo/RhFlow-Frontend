@@ -1,0 +1,5 @@
+// All sidebar styles are globally defined in styles.scss
+// (sidebar-drawer, sidebar-brand, sidebar-nav, nav-link, etc.)
+// No duplication needed here — CSS vars do the theming.
+
+:host { display: block; }

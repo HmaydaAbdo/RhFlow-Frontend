@@ -1,0 +1,189 @@
+<!-- src/app/features/directions/pages/direction-list/direction-list.component.html -->
+<p-confirmDialog></p-confirmDialog>
+
+<div class="fadein animation-duration-400">
+
+  <!-- ── Page Header ── -->
+  <div class="page-hero mb-4">
+    <div class="flex align-items-center gap-3">
+      <div class="hero-icon">
+        <i class="fa fa-building"></i>
+      </div>
+      <div>
+        <h2 class="hero-title">Directions</h2>
+        <p class="hero-sub">Gérez les directions et départements de l'entreprise</p>
+      </div>
+    </div>
+    <div class="flex align-items-center gap-2 flex-wrap">
+      <span class="count-badge">
+        <i class="fa fa-layer-group mr-1 text-xs"></i>{{ totalRecords }} direction(s)
+      </span>
+      <button
+        pButton
+        icon="fa fa-plus"
+        label="Nouvelle direction"
+        (click)="goToCreate()">
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Filter Bar ── -->
+  <div class="filter-bar" [formGroup]="filterForm">
+
+    <span class="p-input-icon-left" style="flex: 1; min-width: 220px">
+      <i class="fa fa-magnifying-glass"></i>
+      <input
+        type="text"
+        pInputText
+        formControlName="nom"
+        placeholder="Rechercher par nom..."
+        class="w-full"
+      />
+    </span>
+
+    <p-dropdown
+      formControlName="directeurId"
+      [options]="directors"
+      optionLabel="fullName"
+      optionValue="id"
+      placeholder="Filtrer par directeur..."
+      [filter]="true"
+      filterPlaceholder="Rechercher..."
+      [showClear]="true"
+      appendTo="body"
+      (onShow)="onDirectorShow()"
+      (onHide)="onDirectorHide()"
+      (onFilter)="onDirectorFilter($event)">
+
+      <ng-template pTemplate="item" let-user>
+        <div class="flex align-items-center gap-2">
+          <div class="director-avatar">{{ user.fullName?.charAt(0)?.toUpperCase() }}</div>
+          <span class="text-sm">{{ user.fullName }}</span>
+        </div>
+      </ng-template>
+
+      <ng-template pTemplate="footer">
+        <div *ngIf="directorLoading" class="director-loading-footer">
+          <i class="fa fa-circle-notch fa-spin text-primary text-xs mr-2"></i>
+          <span class="text-xs text-color-secondary">Chargement...</span>
+        </div>
+      </ng-template>
+
+    </p-dropdown>
+
+    <button
+      *ngIf="hasActiveFilters"
+      pButton
+      icon="fa fa-xmark"
+      severity="secondary"
+      [outlined]="true"
+      [rounded]="true"
+      pTooltip="Réinitialiser les filtres"
+      (click)="onClearFilters()">
+    </button>
+
+  </div>
+
+  <!-- ── Data Table ── -->
+  <div class="table-card">
+    <p-table
+      [value]="directions"
+      [lazy]="true"
+      [paginator]="true"
+      [rows]="10"
+      [totalRecords]="totalRecords"
+      [loading]="loading"
+      [rowsPerPageOptions]="[5, 10, 25]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="{first}–{last} sur {totalRecords}"
+      (onLazyLoad)="onTableLazyLoad($event)"
+      [sortField]="'id'"
+      [sortOrder]="1"
+      styleClass="p-datatable-sm"
+      [rowHover]="true"
+      [breakpoint]="'960px'"
+      [rowTrackBy]="trackByDirection">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="id" style="width: 80px">
+            ID <p-sortIcon field="id"></p-sortIcon>
+          </th>
+          <th pSortableColumn="nom">
+            Nom <p-sortIcon field="nom"></p-sortIcon>
+          </th>
+          <th pSortableColumn="directeurNom">
+            Directeur <p-sortIcon field="directeurNom"></p-sortIcon>
+          </th>
+          <th pSortableColumn="fichesDePosteCount" class="text-center">
+            Fiches de Poste <p-sortIcon field="fichesDePosteCount"></p-sortIcon>
+          </th>
+          <th style="width: 130px" class="text-center">Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-direction>
+        <tr>
+          <td>
+            <span class="id-chip">{{ direction.id }}</span>
+          </td>
+          <td>
+            <div class="flex align-items-center gap-2">
+              <div class="row-icon">
+                <i class="fa fa-building"></i>
+              </div>
+              <span class="font-semibold text-900">{{ direction.nom }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="flex align-items-center gap-2">
+              <i class="fa fa-user-tie text-color-secondary"></i>
+              <span>{{ direction.directeurNom || 'Non assigné' }}</span>
+            </div>
+          </td>
+          <td class="text-center">
+            <span [class]="'p-badge ' + (direction.fichesDePosteCount > 0 ? 'p-badge-info' : 'p-badge-secondary')">
+              {{ direction.fichesDePosteCount }}
+            </span>
+          </td>
+          <td class="text-center">
+            <button
+              pButton
+              icon="fa fa-pen"
+              severity="info"
+              [rounded]="true"
+              [text]="true"
+              pTooltip="Modifier"
+              (click)="goToEdit(direction)">
+            </button>
+            <button
+              pButton
+              icon="fa fa-trash"
+              severity="danger"
+              [rounded]="true"
+              [text]="true"
+              pTooltip="Supprimer"
+              (click)="confirmDelete(direction)">
+            </button>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5">
+            <div class="empty-state">
+              <i class="fa fa-building-circle-xmark"></i>
+              <p class="font-semibold mt-2 mb-1">Aucune direction trouvée</p>
+              <p class="text-sm text-color-secondary mb-0">
+                {{ hasActiveFilters ? 'Essayez un autre terme de recherche.' : 'Créez votre première direction.' }}
+              </p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+    </p-table>
+  </div>
+
+</div>

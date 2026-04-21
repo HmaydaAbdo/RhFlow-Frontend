@@ -1,0 +1,9 @@
+<p-toast position="top-right"></p-toast>
+
+<div class="app-body">
+  <app-topbar (toggleSidebar)="onToggleSidebar()"></app-topbar>
+  <app-sidebar [(visible)]="sidebarVisible"></app-sidebar>
+  <main class="app-main">
+    <router-outlet></router-outlet>
+  </main>
+</div>

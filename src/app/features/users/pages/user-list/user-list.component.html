@@ -1,0 +1,126 @@
+<p-confirmDialog></p-confirmDialog>
+
+<div class="fadein animation-duration-400">
+
+  <!-- Header -->
+  <div class="flex align-items-center justify-content-between mb-3">
+    <div>
+      <h2 class="m-0 text-xl font-bold">Gestion des Utilisateurs</h2>
+      <p class="mt-1 mb-0 text-color-secondary text-sm">{{ totalRecords }} utilisateur(s) au total</p>
+    </div>
+    <button pButton label="Nouvel utilisateur" icon="fa fa-plus"
+            routerLink="/users/new"></button>
+  </div>
+
+  <!-- Search & Filter (Reactive Forms) -->
+  <form [formGroup]="filtersForm" class="flex align-items-center gap-2 mb-3 flex-wrap">
+    <span class="p-input-icon-left flex-1">
+      <i class="fa fa-magnifying-glass"></i>
+      <input
+        type="text"
+        pInputText
+        formControlName="keyword"
+        placeholder="Rechercher par email ou nom..."
+        class="w-full"
+      />
+    </span>
+    <p-dropdown
+      [options]="enabledOptions"
+      formControlName="enabled"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="Statut"
+      [style]="{ minWidth: '140px' }">
+    </p-dropdown>
+    @if (hasActiveFilter) {
+      <button type="button" pButton icon="fa fa-xmark" severity="secondary"
+              (click)="onClearFilters()" pTooltip="Réinitialiser"></button>
+    }
+  </form>
+
+  <!-- Table -->
+  <p-table
+    [value]="users"
+    [lazy]="true"
+    [paginator]="true"
+    [rows]="10"
+    [totalRecords]="totalRecords"
+    [loading]="loading"
+    [rowsPerPageOptions]="[5, 10, 25]"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="{first} - {last} sur {totalRecords}"
+    (onLazyLoad)="loadUsers($event)"
+    [sortField]="'id'"
+    [sortOrder]="1"
+    styleClass="p-datatable-sm"
+    [rowHover]="true">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="id" style="width: 80px">
+          ID <p-sortIcon field="id"></p-sortIcon>
+        </th>
+        <th pSortableColumn="email" style="width: 240px">
+          Email <p-sortIcon field="email"></p-sortIcon>
+        </th>
+        <th pSortableColumn="fullName">
+          Nom complet <p-sortIcon field="fullName"></p-sortIcon>
+        </th>
+        <th style="width: 140px">GSM</th>
+        <th>Rôles</th>
+        <th style="width: 100px" class="text-center">Statut</th>
+        <th style="width: 160px" class="text-center">Actions</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-user>
+      <tr>
+        <td>{{ user.id }}</td>
+        <td>
+          <a class="font-semibold text-primary cursor-pointer no-underline hover:underline"
+             [routerLink]="['/users', user.id]">
+            {{ user.email }}
+          </a>
+        </td>
+        <td class="font-semibold">{{ user.fullName }}</td>
+        <td>{{ user.gsm || '—' }}</td>
+        <td>
+          <div class="flex flex-wrap gap-1">
+            @for (role of user.roles; track trackRole($index, role)) {
+              <p-tag [value]="displayRole(role)" [rounded]="true" severity="info"></p-tag>
+            } @empty {
+              <span class="text-color-secondary text-sm">Aucun rôle</span>
+            }
+          </div>
+        </td>
+        <td class="text-center">
+          <p-tag [value]="user.enabled ? 'Actif' : 'Inactif'"
+                 [severity]="user.enabled ? 'success' : 'danger'"
+                 [rounded]="true">
+          </p-tag>
+        </td>
+        <td class="text-center flex flex-row flex-nowrap">
+          <button pButton icon="fa fa-pen" severity="info" [rounded]="true" [text]="true"
+                  pTooltip="Éditer" tooltipPosition="left"
+                  [routerLink]="['/users', user.id]"></button>
+          <button pButton [icon]="user.enabled ? 'fa fa-ban' : 'fa fa-check'"
+                  [severity]="user.enabled ? 'warning' : 'success'" [rounded]="true" [text]="true"
+                  [pTooltip]="user.enabled ? 'Désactiver' : 'Activer'" tooltipPosition="left"
+                  (click)="onToggleEnabled(user)"></button>
+          <button pButton icon="fa fa-trash" severity="danger" [rounded]="true" [text]="true"
+                  pTooltip="Supprimer" tooltipPosition="left" (click)="confirmDelete(user)"></button>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7" class="text-center p-4 text-color-secondary">
+          Aucun utilisateur trouvé
+        </td>
+      </tr>
+    </ng-template>
+
+  </p-table>
+
+</div>

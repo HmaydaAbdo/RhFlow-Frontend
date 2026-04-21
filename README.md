@@ -1,27 +1,88 @@
-# RhErpFrontend
+# RH Flow — Frontend
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.17.
+Frontend Angular de **RH Flow**, plateforme intelligente de gestion des ressources humaines (projet STAPORT SA — BTP, Casablanca).
 
-## Development server
+Ce dépôt héberge uniquement la partie front (Angular 17). Le back (Spring Boot + PostgreSQL + MinIO + IA) est dans un dépôt séparé : `rh-erp-backend`.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+## Stack
 
-## Code scaffolding
+- **Angular 17.3** — standalone components, nouveau control flow (`@if` / `@for` / `@switch`), Reactive Forms
+- **PrimeNG 17 + PrimeFlex** — design system UI
+- **RxJS 7** + `DestroyRef` / `takeUntilDestroyed` pour la gestion des subscriptions
+- **Chart.js** pour les visualisations
+- **TypeScript 5.4**, SCSS
+- **FontAwesome Free**
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## Modules fonctionnels
+
+| Module                 | Description                                                               |
+|------------------------|---------------------------------------------------------------------------|
+| `landing`              | Page publique de présentation                                             |
+| `auth`                 | Authentification JWT (login)                                              |
+| `dashboard`            | Tableau de bord par rôle (ADMIN / DRH / DIRECTEUR)                        |
+| `users`                | Gestion des utilisateurs (création, édition, attribution des rôles)       |
+| `roles`                | Gestion des rôles (ADMIN / DRH / DIRECTEUR)                               |
+| `directions`           | Directions organisationnelles                                             |
+| `fiches-poste`         | Fiches de poste                                                           |
+| `besoins-recrutement`  | Besoins de recrutement (demande DIRECTEUR → validation DRH)               |
+| `projets-recrutement`  | Projets de recrutement pilotés par le DRH                                 |
+
+## Prérequis
+
+- Node.js 18+ (ou 20 LTS recommandé)
+- npm 9+
+- Backend RH Flow démarré localement (par défaut `http://localhost:8080/rh`)
+
+## Installation
+
+```bash
+npm install
+```
+
+## Configuration
+
+Les URL backend sont dans `src/environments/` :
+
+- `environment.ts` — dev local, pointe sur `http://localhost:8080/rh`
+- `environment.prod.ts` — prod, chemin relatif `/rh` (servi derrière un reverse proxy)
+
+Aucun secret côté front (le JWT est reçu du back et stocké en session).
+
+## Lancer en dev
+
+```bash
+npm start
+# ou
+ng serve
+```
+
+Application disponible sur `http://localhost:4200/`.
 
 ## Build
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+```bash
+ng build                      # build prod par défaut
+ng build --configuration=development
+```
 
-## Running unit tests
+Artifacts dans `dist/`.
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+## Tests
 
-## Running end-to-end tests
+```bash
+ng test          # tests unitaires Karma + Jasmine
+```
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+## Conventions projet
 
-## Further help
+- **Reactive Forms uniquement** — pas de `ngModel`
+- **Nouveau control flow** (`@if` / `@for` / `@switch`) — pas de `*ngIf` / `*ngFor`
+- **Pages d'édition unifiées** (une seule page pour create + edit), pas de dialogs par action
+- **Enums métier centralisés** (pas de string literal en dur — miroir strict du back)
+- **Gestion des subscriptions** : `DestroyRef` + `takeUntilDestroyed(this.destroyRef)`
+- **RBAC par rôle** (pas de permissions granulaires) : `ADMIN`, `DRH`, `DIRECTEUR`
+- **Pas de skeleton loaders** — on affiche un état vide ou un spinner minimaliste
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+## Licence
+
+Projet privé — STAPORT SA.

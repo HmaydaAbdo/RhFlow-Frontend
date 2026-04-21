@@ -1,0 +1,233 @@
+<div class="lnd-wrap">
+
+  <!-- ── Animated background ── -->
+  <div class="lnd-bg" aria-hidden="true">
+    <div class="lnd-orb lnd-orb-1"></div>
+    <div class="lnd-orb lnd-orb-2"></div>
+    <div class="lnd-orb lnd-orb-3"></div>
+    <div class="lnd-grid"></div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       NAV
+  ══════════════════════════════════ -->
+  <nav class="lnd-nav">
+    <div class="lnd-nav-brand">
+      <div class="lnd-nav-orb"><i class="fa fa-building"></i></div>
+      <span class="lnd-nav-name"><span>RH</span> Flow</span>
+    </div>
+    <div class="lnd-nav-right">
+      <span class="lnd-nav-pill">
+        <i class="fa fa-wand-magic-sparkles"></i> IA intégrée
+      </span>
+      <button class="lnd-btn-outline" (click)="goToLogin()">
+        <i class="fa fa-right-to-bracket"></i>
+        Se connecter
+      </button>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════
+       HERO
+  ══════════════════════════════════ -->
+  <section class="lnd-hero">
+
+    <div class="lnd-badge">
+      <span class="lnd-badge-dot"></span>
+      Plateforme RH intelligente · Powered by AI
+    </div>
+
+    <h1 class="lnd-hero-title">
+      Le recrutement,<br>
+      de la demande à <span class="lnd-accent">l'offre IA</span>
+    </h1>
+
+    <p class="lnd-hero-sub">
+      Besoins, décisions, projets, offres générées par IA —<br class="lnd-br-hide">
+      chaque étape de votre recrutement, tracée et automatisée.
+    </p>
+
+    <div class="lnd-hero-cta">
+      <button class="lnd-btn-primary" (click)="goToLogin()">
+        <span>Accéder à mon espace</span>
+        <i class="fa fa-arrow-right lnd-cta-arrow"></i>
+      </button>
+    </div>
+
+    <!-- Stats strip -->
+    <div class="lnd-stats">
+      <div class="lnd-stat" *ngFor="let s of stats">
+        <i [class]="s.icon + ' lnd-stat-icon'"></i>
+        <span class="lnd-stat-val">{{ s.value }}</span>
+        <span class="lnd-stat-lbl">{{ s.label }}</span>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════
+       WORKFLOW STEPPER
+  ══════════════════════════════════ -->
+  <section class="lnd-workflow-section">
+
+    <div class="lnd-section-label">
+      <span><i class="fa fa-route mr-1"></i> Flux de recrutement</span>
+    </div>
+
+    <h2 class="lnd-section-title">
+      Du besoin à l'embauche, tout est automatisé
+    </h2>
+
+    <div class="lnd-workflow">
+      <div class="lnd-wf-step"
+           *ngFor="let step of workflow; let i = index; let last = last">
+
+        <div class="lnd-wf-card">
+          <div class="lnd-wf-icon">
+            <i [class]="step.icon"></i>
+          </div>
+          <h4 class="lnd-wf-title">{{ step.title }}</h4>
+          <p class="lnd-wf-sub">{{ step.sub }}</p>
+          <div class="lnd-wf-role">
+            <i [class]="step.roleIcon"></i>
+            <span>{{ step.role }}</span>
+          </div>
+        </div>
+
+        <div class="lnd-wf-connector" *ngIf="!last" aria-hidden="true">
+          <div class="lnd-wf-line"></div>
+          <i class="fa fa-chevron-right lnd-wf-arrow"></i>
+        </div>
+
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════
+       AI SPOTLIGHT
+  ══════════════════════════════════ -->
+  <section class="lnd-ai-section">
+    <div class="lnd-ai-inner">
+
+      <div class="lnd-ai-left">
+        <div class="lnd-ai-badge">
+          <i class="fa fa-microchip"></i>
+          Intelligence Artificielle
+        </div>
+        <h2 class="lnd-ai-title">
+          Votre offre d'emploi<br>rédigée en un clic
+        </h2>
+        <p class="lnd-ai-desc">
+          RH Flow analyse la fiche de poste et génère automatiquement une annonce
+          LinkedIn professionnelle, en français, calibrée selon le niveau d'expérience
+          attendu — sans jamais inventer de données salariales.
+        </p>
+        <div class="lnd-ai-points">
+          <div class="lnd-ai-point">
+            <i class="fa fa-circle-check"></i>
+            <span>Ton institutionnel adapté au profil recherché</span>
+          </div>
+          <div class="lnd-ai-point">
+            <i class="fa fa-circle-check"></i>
+            <span>Fallback multi-fournisseurs IA (Groq, Gemini, Mistral…)</span>
+          </div>
+          <div class="lnd-ai-point">
+            <i class="fa fa-circle-check"></i>
+            <span>Formatée en Markdown, prête à copier-coller</span>
+          </div>
+        </div>
+        <button class="lnd-btn-primary lnd-ai-cta" (click)="goToLogin()">
+          <span>Essayer maintenant</span>
+          <i class="fa fa-arrow-right lnd-cta-arrow"></i>
+        </button>
+      </div>
+
+      <div class="lnd-ai-right" aria-hidden="true">
+        <div class="lnd-ai-mockup">
+          <div class="lnd-ai-mockup-bar">
+            <span class="lnd-ai-dot lnd-ai-dot--r"></span>
+            <span class="lnd-ai-dot lnd-ai-dot--y"></span>
+            <span class="lnd-ai-dot lnd-ai-dot--g"></span>
+            <span class="lnd-ai-mockup-title">Offre générée</span>
+          </div>
+          <div class="lnd-ai-mockup-body">
+            <div class="lnd-ai-line lnd-ai-line--h1"></div>
+            <div class="lnd-ai-line lnd-ai-line--sub"></div>
+            <div class="lnd-ai-spacer"></div>
+            <div class="lnd-ai-line lnd-ai-line--h2"></div>
+            <div class="lnd-ai-line lnd-ai-line--p"></div>
+            <div class="lnd-ai-line lnd-ai-line--p lnd-ai-line--short"></div>
+            <div class="lnd-ai-spacer"></div>
+            <div class="lnd-ai-line lnd-ai-line--h2"></div>
+            <div class="lnd-ai-bullet"><i class="fa fa-check"></i><div class="lnd-ai-line lnd-ai-line--p"></div></div>
+            <div class="lnd-ai-bullet"><i class="fa fa-check"></i><div class="lnd-ai-line lnd-ai-line--p lnd-ai-line--short"></div></div>
+            <div class="lnd-ai-bullet"><i class="fa fa-check"></i><div class="lnd-ai-line lnd-ai-line--p"></div></div>
+            <div class="lnd-ai-spacer"></div>
+            <div class="lnd-ai-chip">
+              <i class="fa fa-wand-magic-sparkles"></i>
+              <span>Généré par RH Flow AI</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════
+       FEATURES
+  ══════════════════════════════════ -->
+  <section class="lnd-features-section">
+
+    <div class="lnd-section-label">
+      <span>Fonctionnalités</span>
+    </div>
+
+    <h2 class="lnd-section-title">
+      Tout ce dont votre équipe RH a besoin
+    </h2>
+
+    <div class="lnd-features-grid">
+      <div class="lnd-feat-card"
+           *ngFor="let f of features; let i = index"
+           [style.animation-delay]="(i * 0.07) + 's'">
+        <div class="lnd-feat-header">
+          <div class="lnd-feat-icon">
+            <i [class]="f.icon"></i>
+          </div>
+          <span *ngIf="f.badge" class="lnd-feat-badge"
+                [class.lnd-feat-badge--ai]="f.badge === 'IA'">
+            {{ f.badge }}
+          </span>
+        </div>
+        <h3 class="lnd-feat-title">{{ f.title }}</h3>
+        <p class="lnd-feat-desc">{{ f.desc }}</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════
+       CTA BANNER
+  ══════════════════════════════════ -->
+  <section class="lnd-cta-banner">
+    <div class="lnd-cta-inner">
+      <div class="lnd-cta-icon"><i class="fa fa-rocket"></i></div>
+      <h2>Prêt à moderniser votre recrutement&nbsp;?</h2>
+      <p>Connectez-vous et laissez l'IA travailler avec vous.</p>
+      <button class="lnd-btn-primary lnd-btn-lg" (click)="goToLogin()">
+        <span>Accéder à RH Flow</span>
+        <i class="fa fa-arrow-right lnd-cta-arrow"></i>
+      </button>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════
+       FOOTER
+  ══════════════════════════════════ -->
+  <footer class="lnd-footer">
+    <span><span class="lnd-footer-brand">RH Flow</span> — Plateforme intelligente de gestion des ressources humaines</span>
+  </footer>
+
+</div>

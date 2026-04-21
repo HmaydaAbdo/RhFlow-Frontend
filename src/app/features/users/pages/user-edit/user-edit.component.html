@@ -1,0 +1,199 @@
+<p-confirmDialog></p-confirmDialog>
+
+<div class="fadein animation-duration-400">
+
+  <!-- ==================== HEADER ==================== -->
+  <div class="flex align-items-center gap-3 mb-3">
+    <button pButton icon="fa fa-arrow-left" severity="secondary" [rounded]="true"
+            pTooltip="Retour" (click)="goBack()"></button>
+    <div class="flex-1">
+      @if (isCreateMode) {
+        <h2 class="m-0 text-xl font-bold">Nouvel utilisateur</h2>
+        <p class="mt-1 mb-0 text-color-secondary text-sm">
+          Créer un compte et lui assigner un ou plusieurs rôles.
+        </p>
+      } @else {
+        <h2 class="m-0 text-xl font-bold">{{ user?.fullName }}</h2>
+        <p class="mt-1 mb-0 text-color-secondary text-sm">
+          {{ user?.email }} — Édition de l'utilisateur
+        </p>
+      }
+    </div>
+
+    @if (!isCreateMode && user) {
+      <p-tag [value]="user.enabled ? 'Actif' : 'Inactif'"
+             [severity]="user.enabled ? 'success' : 'danger'"
+             [rounded]="true"></p-tag>
+    }
+  </div>
+
+  <!-- ==================== LOADING ==================== -->
+  @if (loading) {
+    <div class="flex align-items-center justify-content-center p-6">
+      <i class="fa fa-spinner fa-spin text-3xl text-primary"></i>
+    </div>
+  }
+
+  <!-- ==================== FORM ==================== -->
+  @if (!loading) {
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="grid">
+
+        <!-- ── Informations ── -->
+        <div class="col-12">
+          <div class="surface-card border-round-xl border-1 surface-border p-4">
+            <h3 class="mt-0 mb-3 text-lg font-bold flex align-items-center gap-2">
+              <i class="fa fa-id-card text-primary"></i>
+              Informations
+            </h3>
+
+            <div class="grid formgrid p-fluid">
+
+              <!-- Email -->
+              <div class="field col-12 md:col-6">
+                <label for="email" class="block mb-1 text-sm">
+                  Email @if (isCreateMode) {<span class="text-red-400">*</span>}
+                </label>
+                <input id="email" pInputText type="email" formControlName="email"
+                       [class.ng-invalid]="isFieldInvalid('email')"
+                       [class.ng-dirty]="isFieldInvalid('email')"
+                       placeholder="prenom.nom@entreprise.com" />
+                @if (isFieldInvalid('email')) {
+                  <small class="p-error block mt-1">Email valide requis</small>
+                }
+                @if (!isCreateMode) {
+                  <small class="text-color-secondary block mt-1">
+                    L'email ne peut pas être modifié.
+                  </small>
+                }
+              </div>
+
+              <!-- Nom complet -->
+              <div class="field col-12 md:col-6">
+                <label for="fullName" class="block mb-1 text-sm">
+                  Nom complet <span class="text-red-400">*</span>
+                </label>
+                <input id="fullName" pInputText formControlName="fullName"
+                       [class.ng-invalid]="isFieldInvalid('fullName')"
+                       [class.ng-dirty]="isFieldInvalid('fullName')"
+                       placeholder="Prénom Nom" />
+                @if (isFieldInvalid('fullName')) {
+                  <small class="p-error block mt-1">Nom complet requis</small>
+                }
+              </div>
+
+              <!-- GSM -->
+              <div class="field col-12 md:col-6">
+                <label for="gsm" class="block mb-1 text-sm">GSM</label>
+                <input id="gsm" pInputText formControlName="gsm"
+                       placeholder="+212 6 00 00 00 00" />
+              </div>
+
+              <!-- Mot de passe -->
+              <div class="field col-12 md:col-6">
+                <label for="password" class="block mb-1 text-sm">
+                  Mot de passe
+                  @if (isCreateMode) {
+                    <span class="text-red-400">*</span>
+                  } @else {
+                    <span class="text-color-secondary">(laisser vide = inchangé)</span>
+                  }
+                </label>
+                <div class="p-inputgroup">
+                  <input id="password" pInputText
+                         [type]="showPassword ? 'text' : 'password'"
+                         formControlName="password"
+                         [class.ng-invalid]="isFieldInvalid('password')"
+                         [class.ng-dirty]="isFieldInvalid('password')"
+                         placeholder="Min. 8 caractères" />
+                  <button type="button" pButton
+                          [icon]="showPassword ? 'fa fa-eye-slash' : 'fa fa-eye'"
+                          severity="secondary"
+                          (click)="showPassword = !showPassword"></button>
+                </div>
+                @if (isFieldInvalid('password')) {
+                  <small class="p-error block mt-1">
+                    Mot de passe requis (8 caractères min.)
+                  </small>
+                }
+                @if (isCreateMode) {
+                  <small class="text-color-secondary block mt-1">
+                    L'utilisateur ne peut pas changer son mot de passe lui-même.
+                  </small>
+                }
+              </div>
+
+              <!-- Rôles -->
+              <div class="field col-12">
+                <label for="roleIds" class="block mb-1 text-sm">
+                  Rôles @if (isCreateMode) {<span class="text-red-400">*</span>}
+                </label>
+                <p-multiSelect id="roleIds"
+                               [options]="allRoles"
+                               optionLabel="roleName"
+                               optionValue="roleId"
+                               formControlName="roleIds"
+                               placeholder="Sélectionner un ou plusieurs rôles"
+                               [showClear]="true"
+                               [filter]="true"
+                               appendTo="body"
+                               styleClass="w-full">
+                  <ng-template let-role pTemplate="item">
+                    {{ displayRole(role.roleName) }}
+                  </ng-template>
+                  <ng-template let-selected pTemplate="selectedItems">
+                    {{ selected?.length ? selected.length + ' rôle(s) sélectionné(s)' : 'Sélectionner un ou plusieurs rôles' }}
+                  </ng-template>
+                </p-multiSelect>
+                @if (isFieldInvalid('roleIds')) {
+                  <small class="p-error block mt-1">Au moins un rôle requis</small>
+                }
+              </div>
+
+            </div><!-- /grid formgrid -->
+          </div>
+        </div>
+
+        <!-- ── Actions (édition uniquement) ── -->
+        @if (!isCreateMode && user) {
+          <div class="col-12">
+            <div class="surface-card border-round-xl border-1 surface-border p-4">
+              <h3 class="mt-0 mb-3 text-lg font-bold flex align-items-center gap-2">
+                <i class="fa fa-gear text-primary"></i>
+                Actions
+              </h3>
+              <div class="flex flex-wrap gap-3 align-items-center">
+
+                <div class="flex align-items-center gap-2">
+                  <p-inputSwitch [formControl]="enabledControl"></p-inputSwitch>
+                  <span class="text-sm">
+                    {{ user.enabled ? 'Compte actif' : 'Compte désactivé' }}
+                  </span>
+                </div>
+
+                <button type="button" pButton label="Supprimer" icon="fa fa-trash"
+                        severity="danger" (click)="confirmDelete()"></button>
+
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- ── Boutons formulaire ── -->
+        <div class="col-12">
+          <div class="flex justify-content-end gap-2">
+            <button type="button" pButton label="Annuler"
+                    severity="secondary" (click)="goBack()"></button>
+            <button type="submit" pButton
+                    [label]="isCreateMode ? 'Créer' : 'Enregistrer'"
+                    [icon]="isCreateMode ? 'fa fa-check' : 'fa fa-floppy-disk'"
+                    [loading]="saving"
+                    [disabled]="form.invalid || saving"></button>
+          </div>
+        </div>
+
+      </div>
+    </form>
+  }
+
+</div>

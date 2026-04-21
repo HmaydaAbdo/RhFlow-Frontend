@@ -40,3 +40,16 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Local environment / secrets (safety net — front ne devrait pas en avoir)
+.env
+.env.*
+!.env.example
+
+# Surcharges locales non versionnées
+*.local.ts
+*.local.json
+
+# Tests coverage (déjà /coverage plus haut, mais au cas où)
+/coverage/
+*.lcov

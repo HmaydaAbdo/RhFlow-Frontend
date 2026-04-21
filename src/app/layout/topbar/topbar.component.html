@@ -1,0 +1,51 @@
+<header class="app-topbar">
+
+  <!-- Left: hamburger (always visible) + brand -->
+  <div class="flex align-items-center gap-2">
+    <button pButton
+            icon="fa fa-bars"
+            severity="secondary"
+            [text]="true"
+            [rounded]="true"
+            pTooltip="Menu"
+            tooltipPosition="bottom"
+            (click)="onToggleSidebar()">
+    </button>
+    <span class="topbar-brand font-bold">
+      <span class="text-primary">RH</span> ERP
+    </span>
+  </div>
+
+  <!-- Right: theme toggle + user -->
+  <div class="flex align-items-center gap-1">
+
+    <button pButton
+            [icon]="isDark ? 'fa fa-sun' : 'fa fa-moon'"
+            severity="secondary"
+            [text]="true"
+            [rounded]="true"
+            [pTooltip]="isDark ? 'Thème clair' : 'Thème sombre'"
+            tooltipPosition="bottom"
+            (click)="toggleTheme()">
+    </button>
+
+    <span class="topbar-sep"></span>
+
+    <!-- User pill -->
+    <div class="user-pill" (click)="userMenu.toggle($event)">
+      <div class="user-avatar">
+        <i class="fa fa-user"></i>
+      </div>
+      <div class="flex-column hidden sm:flex">
+        <span class="user-name">{{ fullName }}</span>
+        @for (role of roles ; track role){
+          <span class="user-role">{{ role }}</span>
+        }
+      </div>
+      <i class="fa fa-chevron-down text-color-secondary hidden sm:block" style="font-size:.6rem"></i>
+    </div>
+
+    <p-menu #userMenu [model]="userMenuItems" [popup]="true" appendTo="body"></p-menu>
+
+  </div>
+</header>

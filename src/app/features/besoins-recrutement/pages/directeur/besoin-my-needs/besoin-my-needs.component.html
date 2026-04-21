@@ -1,0 +1,206 @@
+<p-confirmDialog></p-confirmDialog>
+
+<div class="fadein animation-duration-400">
+
+  <!-- ── Page Header ── -->
+  <div class="page-hero mb-4">
+    <div class="flex align-items-center gap-3">
+      <div class="hero-icon">
+        <i class="fa fa-bullhorn"></i>
+      </div>
+      <div>
+        <h2 class="hero-title">Mes Recrutements</h2>
+        <p class="hero-sub">Exprimez et suivez vos demandes de recrutement</p>
+      </div>
+    </div>
+    <div class="flex align-items-center gap-2 flex-wrap">
+      <span class="count-badge">
+        <i class="fa fa-layer-group mr-1 text-xs"></i>{{ totalRecords }} besoin(s)
+      </span>
+      <button
+        pButton
+        icon="fa fa-plus"
+        label="Nouveau besoin"
+        (click)="goToCreate()">
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Filters ── -->
+  <div class="filter-bar">
+    <p-dropdown
+      [options]="statutOptions"
+      [(ngModel)]="selectedStatut"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="Tous les statuts"
+      [showClear]="true"
+      styleClass="filter-dropdown"
+      (onChange)="onStatutFilterChange()">
+      <ng-template pTemplate="selectedItem" let-item>
+        <div class="flex align-items-center gap-2" *ngIf="item">
+          <i class="fa fa-circle-dot text-xs" [ngClass]="{
+            'text-blue-500':  item.value === StatutBesoin.EN_COURS,
+            'text-green-500': item.value === StatutBesoin.ACCEPTE,
+            'text-red-500':   item.value === StatutBesoin.REFUSE
+          }"></i>
+          <span>{{ item.label }}</span>
+        </div>
+      </ng-template>
+    </p-dropdown>
+
+    <p-dropdown
+      [options]="prioriteOptions"
+      [(ngModel)]="selectedPriorite"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="Toutes les priorités"
+      [showClear]="true"
+      styleClass="filter-dropdown"
+      (onChange)="onPrioriteFilterChange()">
+    </p-dropdown>
+
+    <button
+      *ngIf="hasActiveFilters"
+      pButton
+      icon="fa fa-filter-circle-xmark"
+      severity="secondary"
+      [rounded]="true"
+      pTooltip="Effacer les filtres"
+      (click)="onClearFilters()">
+    </button>
+  </div>
+
+  <!-- ── Loading Spinner ── -->
+  <div *ngIf="loading" class="flex justify-content-center align-items-center py-8">
+    <i class="fa fa-circle-notch fa-spin text-primary" style="font-size: 2rem"></i>
+  </div>
+
+  <!-- ── Card Grid ── -->
+  <ng-container *ngIf="!loading">
+
+    <div class="grid" *ngIf="besoins.length > 0; else emptyState">
+      <div class="col-12 md:col-6 lg:col-4" *ngFor="let besoin of besoins; trackBy: trackByBesoin">
+        <div class="bs-card">
+
+          <!-- Status banner -->
+          <div class="bs-banner" >
+            <span class="bs-status-pill" >
+              <i [class]="besoin.statut === StatutBesoin.EN_COURS ? 'fa fa-clock' :
+                          besoin.statut === StatutBesoin.ACCEPTE  ? 'fa fa-circle-check' :
+                                                                    'fa fa-circle-xmark'"></i>
+              {{ statutLabel(besoin.statut) }}
+            </span>
+            <span class="bs-priority-pill"
+                  [ngClass]="besoin.priorite === PrioriteBesoin.HAUTE   ? 'bs-prio--haute' :
+                              besoin.priorite === PrioriteBesoin.NORMALE ? 'bs-prio--normale' :
+                                                                           'bs-prio--faible'">
+              <i class="fa fa-flag"></i>
+              {{ besoin.priorite | titlecase }}
+            </span>
+          </div>
+
+          <!-- Body -->
+          <div class="bs-body">
+
+            <h3 class="bs-title" [pTooltip]="besoin.ficheDePosteIntitule" tooltipPosition="top">
+              {{ besoin.ficheDePosteIntitule }}
+            </h3>
+
+            <div class="bs-info">
+              <div class="bs-row">
+                <span class="bs-lbl"><i class="fa fa-building"></i>Direction</span>
+                <span class="bs-val">{{ besoin.directionNom }}</span>
+              </div>
+              <div class="bs-row">
+                <span class="bs-lbl"><i class="fa fa-users"></i>Postes</span>
+                <span class="bs-val">{{ besoin.nombrePostes }}</span>
+              </div>
+              <div class="bs-row">
+                <span class="bs-lbl"><i class="fa fa-calendar-check"></i>Date souhaitée</span>
+                <span class="bs-val">{{ formatDate(besoin.dateSouhaitee) }}</span>
+              </div>
+              <div class="bs-row">
+                <span class="bs-lbl"><i class="fa fa-clock-rotate-left"></i>Créé le</span>
+                <span class="bs-val">{{ formatDate(besoin.createdAt) }}</span>
+              </div>
+            </div>
+
+            <!-- Motif de refus -->
+            <div class="bs-refus" *ngIf="besoin.statut === StatutBesoin.REFUSE && besoin.motifRefus">
+              <i class="fa fa-circle-exclamation"></i>
+              <span>{{ besoin.motifRefus }}</span>
+            </div>
+
+          </div>
+
+          <!-- Actions footer -->
+          @if (besoin.statut === StatutBesoin.EN_COURS) {
+            <div class="bs-actions">
+              <button
+                pButton
+                icon="fa fa-pen"
+                severity="info"
+                [rounded]="true"
+                [text]="true"
+                pTooltip="Modifier"
+                tooltipPosition="top"
+                (click)="goToEdit(besoin)">
+              </button>
+            </div>
+          }
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Empty State ── -->
+    <ng-template #emptyState>
+      <div class="empty-state">
+        <div class="empty-icon">
+          <i class="fa fa-bullhorn"></i>
+        </div>
+        <h3 class="mt-3 mb-1">Aucun besoin en recrutement</h3>
+        <p class="text-color-secondary text-sm mb-3">
+          <ng-container *ngIf="hasActiveFilters">
+            Modifiez vos critères de filtrage pour afficher des résultats.
+          </ng-container>
+          <ng-container *ngIf="!hasActiveFilters">
+            Exprimez votre premier besoin en cliquant sur "Nouveau besoin".
+          </ng-container>
+        </p>
+        <button
+          *ngIf="!hasActiveFilters"
+          pButton
+          label="Créer un besoin"
+          icon="fa fa-plus"
+          (click)="goToCreate()">
+        </button>
+        <button
+          *ngIf="hasActiveFilters"
+          pButton
+          label="Effacer les filtres"
+          icon="fa fa-filter-circle-xmark"
+          severity="secondary"
+          (click)="onClearFilters()">
+        </button>
+      </div>
+    </ng-template>
+
+  </ng-container>
+
+
+  <!-- ── Paginator ── -->
+  <div class="paginator-card mt-0" *ngIf="totalRecords > 0">
+    <p-paginator
+      [totalRecords]="totalRecords"
+      [rows]="currentRequest.size"
+      [first]="currentRequest.page * currentRequest.size"
+      [rowsPerPageOptions]="[9, 18, 27]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="{first}–{last} sur {totalRecords}"
+      (onPageChange)="onPageChange($event)">
+    </p-paginator>
+  </div>
+
+</div>

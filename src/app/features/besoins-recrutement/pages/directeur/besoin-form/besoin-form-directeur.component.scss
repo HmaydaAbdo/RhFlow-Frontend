@@ -1,0 +1,12 @@
+.priorite-select {
+  ::ng-deep .p-selectbutton {
+    display: flex;
+    width: 100%;
+
+    .p-button {
+      flex: 1;
+      justify-content: center;
+      font-size: 0.82rem;
+    }
+  }
+}

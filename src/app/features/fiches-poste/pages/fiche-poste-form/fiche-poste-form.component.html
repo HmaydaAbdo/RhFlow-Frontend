@@ -1,0 +1,297 @@
+<div class="fadein animation-duration-400">
+
+  <!-- ── Breadcrumb ── -->
+  <div class="breadcrumb mb-4">
+    <a routerLink="/fiches-de-poste" class="breadcrumb-link">
+      <i class="fa fa-file-lines mr-1"></i>Fiches de poste
+    </a>
+    <i class="fa fa-chevron-right breadcrumb-sep"></i>
+    <span class="breadcrumb-current">{{ breadcrumb }}</span>
+  </div>
+
+  <!-- ── Page Header ── -->
+  <div class="page-header flex align-items-center justify-content-between flex-wrap gap-3 mb-5">
+    <div class="flex align-items-center gap-3">
+      <div class="header-icon" [class.edit-mode]="isEdit">
+        <i [class]="isEdit ? 'fa fa-pen' : 'fa fa-file-circle-plus'"></i>
+      </div>
+      <div>
+        <h2 class="m-0 font-bold text-900" style="font-size:1.4rem">{{ pageTitle }}</h2>
+        <p class="mt-1 mb-0 text-color-secondary text-sm">
+          {{ isEdit ? 'Modifiez les informations de la fiche de poste' : 'Définissez les missions et les compétences requises' }}
+        </p>
+      </div>
+    </div>
+    <button pButton label="Retour à la liste" icon="fa fa-arrow-left"
+            severity="secondary" [outlined]="true" (click)="onCancel()">
+    </button>
+  </div>
+
+  <!-- ── Loading Spinner ── -->
+  <div *ngIf="loadingData" class="flex justify-content-center align-items-center py-8">
+    <i class="fa fa-circle-notch fa-spin text-primary" style="font-size: 2rem"></i>
+  </div>
+
+  <!-- ── Form ── -->
+  <ng-container *ngIf="!loadingData">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+      <!-- ─ Card 1 : Identification ─ -->
+      <div class="form-card mb-4">
+        <div class="section-label mb-4">
+          <i class="fa fa-circle-info mr-2"></i>Identification du poste
+        </div>
+
+        <!-- Intitulé -->
+        <div class="field mb-4">
+          <label class="field-label">Intitulé du poste <span class="req">*</span></label>
+          <input
+            pInputText
+            formControlName="intitulePoste"
+            placeholder="Ex : Ingénieur Génie Civil Senior"
+            class="w-full input-lg"
+            [class.ng-invalid]="isFieldInvalid('intitulePoste')"
+            [class.ng-dirty]="isFieldInvalid('intitulePoste')"
+          />
+          <small class="p-error block mt-1" *ngIf="isFieldInvalid('intitulePoste')">
+            <i class="fa fa-circle-exclamation mr-1"></i>
+            <ng-container *ngIf="form.get('intitulePoste')?.errors?.['required']">L'intitulé est requis.</ng-container>
+          </small>
+        </div>
+
+        <!-- Direction — lazy scroll dropdown -->
+        <div class="field mb-4">
+          <label class="field-label">Direction <span class="req">*</span></label>
+          <p-dropdown
+            formControlName="directionId"
+            [options]="directions"
+            optionLabel="nom"
+            optionValue="id"
+            placeholder="Sélectionner une direction"
+            [filter]="true"
+            filterPlaceholder="Rechercher..."
+            [showClear]="true"
+            styleClass="w-full"
+            appendTo="body"
+            [class.ng-invalid]="isFieldInvalid('directionId')"
+            [class.ng-dirty]="isFieldInvalid('directionId')"
+            (onShow)="onDirectionShow()"
+            (onHide)="onDirectionHide()"
+            (onFilter)="onDirectionFilter($event)">
+
+            <ng-template pTemplate="selectedItem" let-item>
+              <div class="flex align-items-center gap-2" *ngIf="item">
+                <i class="fa fa-building text-primary text-xs"></i>
+                <span>{{ item.nom }}</span>
+              </div>
+            </ng-template>
+
+            <ng-template pTemplate="item" let-item>
+              <div class="flex align-items-center gap-2">
+                <i class="fa fa-building text-color-secondary text-xs"></i>
+                <span>{{ item.nom }}</span>
+              </div>
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+              <div *ngIf="directionLoading" class="director-loading-footer">
+                <i class="fa fa-circle-notch fa-spin text-primary text-xs mr-2"></i>
+                <span class="text-xs text-color-secondary">Chargement...</span>
+              </div>
+              <div *ngIf="!directionLoading && directions.length === 0" class="director-loading-footer">
+                <span class="text-xs text-color-secondary">Aucune direction trouvée</span>
+              </div>
+            </ng-template>
+
+          </p-dropdown>
+          <small class="p-error block mt-1" *ngIf="isFieldInvalid('directionId')">
+            <i class="fa fa-circle-exclamation mr-1"></i>La direction est requise.
+          </small>
+        </div>
+
+        <!-- Niveau études + Années expérience -->
+        <div class="grid mb-0">
+          <div class="col-12 md:col-6">
+            <div class="field">
+              <label class="field-label">Niveau d'études <span class="req">*</span></label>
+              <p-dropdown
+                formControlName="niveauEtudes"
+                [options]="niveauEtudesOptions"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Sélectionner"
+                styleClass="w-full"
+                [class.ng-invalid]="isFieldInvalid('niveauEtudes')"
+                [class.ng-dirty]="isFieldInvalid('niveauEtudes')">
+              </p-dropdown>
+              <small class="p-error block mt-1" *ngIf="isFieldInvalid('niveauEtudes')">
+                <i class="fa fa-circle-exclamation mr-1"></i>Requis.
+              </small>
+            </div>
+          </div>
+          <div class="col-12 md:col-6">
+            <div class="field">
+              <label class="field-label">Années d'expérience <span class="req">*</span></label>
+              <input
+                pInputText
+                type="number"
+                formControlName="anneesExperience"
+                placeholder="Ex : 3"
+                class="w-full"
+                min="0"
+                [class.ng-invalid]="isFieldInvalid('anneesExperience')"
+                [class.ng-dirty]="isFieldInvalid('anneesExperience')"
+              />
+              <small class="p-error block mt-1" *ngIf="isFieldInvalid('anneesExperience')">
+                <i class="fa fa-circle-exclamation mr-1"></i> Veillez specifier les années d'expériences
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Domaine de formation -->
+        <div class="field mt-4">
+          <label class="field-label">
+            Domaine de formation <span class="req">*</span>
+          </label>
+          <input
+            pInputText
+            formControlName="domaineFormation"
+            placeholder="Ex : Génie Civil, Informatique, Gestion..."
+            class="w-full"
+            [class.ng-invalid]="isFieldInvalid('domaineFormation')"
+            [class.ng-dirty]="isFieldInvalid('domaineFormation')"
+          />
+          <small class="p-error block mt-1" *ngIf="isFieldInvalid('domaineFormation')">
+            <i class="fa fa-circle-exclamation mr-1"></i>
+            <ng-container *ngIf="form.get('domaineFormation')?.errors?.['required']">domaine de Formation est requis.</ng-container>
+          </small>
+        </div>
+      </div>
+
+      <!-- ─ Card 2 : Missions & Activités ─ -->
+      <div class="form-card mb-4">
+        <div class="section-label mb-4">
+          <i class="fa fa-align-left mr-2"></i>Missions &amp; Activités
+        </div>
+
+        <div class="field mb-4">
+          <label class="field-label">
+            Mission principale
+            <span class="req">*</span>
+          </label>
+          <textarea
+            pInputTextarea
+            formControlName="missionPrincipale"
+            placeholder="Décrivez la mission principale du poste..."
+            [autoResize]="true"
+            rows="4"
+            class="w-full"
+            [class.ng-invalid]="isFieldInvalid('missionPrincipale')"
+            [class.ng-dirty]="isFieldInvalid('missionPrincipale')">
+          </textarea>
+          <small class="p-error block mt-1" *ngIf="isFieldInvalid('missionPrincipale')">
+            <i class="fa fa-circle-exclamation mr-1"></i>
+            <ng-container *ngIf="form.get('missionPrincipale')?.errors?.['required']">La mission Principale est requise.</ng-container>
+          </small>
+        </div>
+
+        <p-divider styleClass="my-1"></p-divider>
+
+        <div class="field mt-4 mb-4">
+          <label class="field-label">
+            Activités principales<span class="req">*</span>
+          </label>
+          <textarea
+            pInputTextarea
+            formControlName="activitesPrincipales"
+            placeholder="Ex : Superviser les équipes terrain, rédiger les rapports d'avancement..."
+            [autoResize]="true"
+            rows="4"
+            class="w-full"
+            [class.ng-invalid]="isFieldInvalid('activitesPrincipales')"
+            [class.ng-dirty]="isFieldInvalid('activitesPrincipales')">
+          </textarea>
+          <small class="p-error block mt-1" *ngIf="isFieldInvalid('activitesPrincipales')">
+            <i class="fa fa-circle-exclamation mr-1"></i>
+            <ng-container *ngIf="form.get('activitesPrincipales')?.errors?.['required']">veillez spécifier les activités Principales .</ng-container>
+          </small>
+        </div>
+
+        <p-divider styleClass="my-1"></p-divider>
+
+      </div>
+
+      <!-- ─ Card 3 : Compétences ─ -->
+      <div class="form-card mb-4">
+        <div class="section-label mb-4">
+          <i class="fa fa-star mr-2"></i>Compétences requises
+        </div>
+
+        <div class="field mb-4">
+          <label class="field-label">Compétences techniques <span class="req">*</span>
+          </label>
+          <textarea
+            pInputTextarea
+            formControlName="competencesTechniques"
+            placeholder="Ex : Maîtrise d'AutoCAD, gestion de projet, SQL, Office..."
+            [autoResize]="true"
+            rows="4"
+            class="w-full"
+            [class.ng-invalid]="isFieldInvalid('competencesTechniques')"
+            [class.ng-dirty]="isFieldInvalid('competencesTechniques')">
+          </textarea>
+          <small class="p-error block mt-1" *ngIf="isFieldInvalid('competencesTechniques')">
+            <i class="fa fa-circle-exclamation mr-1"></i>
+            <ng-container *ngIf="form.get('competencesTechniques')?.errors?.['required']">veillez spécifier les compétences technique recherchés.</ng-container>
+          </small>
+        </div>
+
+        <p-divider styleClass="my-1"></p-divider>
+
+        <div class="field mt-4">
+          <label class="field-label"> Compétences managériales  <span class="req">*</span>
+          </label>
+          <textarea
+            pInputTextarea
+            formControlName="competencesManageriales"
+            placeholder="Ex : Leadership, animation d'équipes, gestion des conflits..."
+            [autoResize]="true"
+            rows="3"
+            class="w-full"
+            [class.ng-invalid]="isFieldInvalid('competencesManageriales')"
+            [class.ng-dirty]="isFieldInvalid('competencesManageriales')">
+          </textarea>
+          <small class="p-error block mt-1" *ngIf="isFieldInvalid('competencesManageriales')">
+            <i class="fa fa-circle-exclamation mr-1"></i>
+            <ng-container *ngIf="form.get('competencesManageriales')?.errors?.['required']">Veillez spécifier les compétences managériales requises.</ng-container>
+          </small>
+        </div>
+      </div>
+
+      @if (canEdit()){
+        <!-- ── Action Bar ── -->
+        <div class="action-bar mt-4">
+          <button
+            type="button"
+            pButton
+            label="Annuler"
+            icon="fa fa-xmark"
+            severity="secondary"
+            [outlined]="true"
+            (click)="onCancel()">
+          </button>
+          <button
+            type="submit"
+            pButton
+            [label]="isEdit ? 'Enregistrer les modifications' : 'Créer la fiche de poste'"
+            [icon]="submitting ? 'fa fa-circle-notch fa-spin' : (isEdit ? 'fa fa-check' : 'fa fa-plus')"
+            [disabled]="submitting">
+          </button>
+        </div>
+      }
+
+    </form>
+  </ng-container>
+
+</div>

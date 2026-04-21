@@ -1,0 +1,162 @@
+<div class="fadein animation-duration-400">
+
+  <!-- ── Breadcrumb ── -->
+  <div class="breadcrumb">
+    <a routerLink="/directions"><i class="fa fa-building mr-1"></i>Directions</a>
+    <i class="fa fa-chevron-right sep"></i>
+    <span class="current">{{ breadcrumb }}</span>
+  </div>
+
+  <!-- ── Page Header ── -->
+  <div class="page-hero mb-4">
+    <div class="flex align-items-center gap-3">
+      <div class="header-icon" [class.edit-mode]="isEdit">
+        <i [class]="isEdit ? 'fa fa-pen' : 'fa fa-building-circle-check'"></i>
+      </div>
+      <div>
+        <h2 class="hero-title">{{ pageTitle }}</h2>
+        <p class="hero-sub">
+          {{ isEdit ? 'Modifiez les informations de la direction' : 'Remplissez le formulaire pour créer une nouvelle direction' }}
+        </p>
+      </div>
+    </div>
+    <button pButton label="Retour" icon="fa fa-arrow-left"
+            severity="secondary" [outlined]="true" (click)="onCancel()">
+    </button>
+  </div>
+
+  <!-- ── Loading Spinner ── -->
+  <div *ngIf="loadingData" class="flex justify-content-center align-items-center py-8">
+    <i class="fa fa-circle-notch fa-spin text-primary" style="font-size: 2rem"></i>
+  </div>
+
+  <!-- ── Form ── -->
+  <ng-container *ngIf="!loadingData">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+      <div class="form-card">
+
+        <!-- Section label -->
+        <div class="section-label">
+          <i class="fa fa-circle-info"></i>Informations de la direction
+        </div>
+
+        <!-- Nom -->
+        <div class="field mb-4">
+          <label class="field-label">
+            Nom de la direction <span class="req">*</span>
+          </label>
+          <input
+            pInputText
+            formControlName="nom"
+            placeholder="Ex : Direction des Ressources Humaines"
+            class="w-full"
+            [class.ng-invalid]="isFieldInvalid('nom')"
+            [class.ng-dirty]="isFieldInvalid('nom')"
+          />
+          <small class="p-error block mt-1" *ngIf="isFieldInvalid('nom')">
+            <i class="fa fa-circle-exclamation mr-1"></i>
+            <ng-container *ngIf="form.get('nom')?.errors?.['required']">Le nom est requis.</ng-container>
+            <ng-container *ngIf="form.get('nom')?.errors?.['minlength']">Minimum 2 caractères.</ng-container>
+            <ng-container *ngIf="form.get('nom')?.errors?.['maxlength']">Maximum 100 caractères.</ng-container>
+          </small>
+        </div>
+
+        <p-divider styleClass="my-1"></p-divider>
+
+        <!-- Directeur — lazy scroll dropdown -->
+        <div class="field mt-4 mb-4">
+          <label class="field-label">
+            Directeur <span class="req">*</span>
+          </label>
+
+          <p-dropdown
+            formControlName="directeurId"
+            [options]="directors"
+            optionLabel="fullName"
+            optionValue="id"
+            placeholder="Sélectionner un directeur..."
+            [filter]="true"
+            filterPlaceholder="Rechercher par nom ou email..."
+            [showClear]="true"
+            styleClass="w-full"
+            [class.ng-invalid]="isFieldInvalid('directeurId')"
+            [class.ng-dirty]="isFieldInvalid('directeurId')"
+            appendTo="body"
+            (onShow)="onDirectorShow()"
+            (onHide)="onDirectorHide()"
+            (onFilter)="onDirectorFilter($event)">
+
+            <!-- Selected item template -->
+            <ng-template pTemplate="selectedItem" let-user>
+              <div class="flex align-items-center gap-2" *ngIf="user">
+                <div class="director-avatar">
+                  {{ user.fullName?.charAt(0)?.toUpperCase() }}
+                </div>
+                <div class="flex flex-column">
+                  <span class="text-sm font-semibold">{{ user.fullName }}</span>
+                  <span class="text-xs text-color-secondary">{{ user.email }}</span>
+                </div>
+              </div>
+            </ng-template>
+
+            <!-- Item template -->
+            <ng-template pTemplate="item" let-user>
+              <div class="flex align-items-center gap-2 py-1">
+
+                <div class="flex flex-column">
+                  <span class="text-sm font-semibold line-height-2">{{ user.fullName }}</span>
+                  <span class="text-xs text-color-secondary">{{ user.email }}</span>
+                </div>
+              </div>
+            </ng-template>
+
+            <!-- Footer: loading indicator -->
+            <ng-template pTemplate="footer">
+              <div *ngIf="directorLoading" class="director-loading-footer">
+                <i class="fa fa-circle-notch fa-spin text-primary text-xs mr-2"></i>
+                <span class="text-xs text-color-secondary">Chargement...</span>
+              </div>
+              <div *ngIf="!directorLoading && directors.length === 0" class="director-loading-footer">
+                <span class="text-xs text-color-secondary">Aucun directeur trouvé</span>
+              </div>
+            </ng-template>
+
+          </p-dropdown>
+
+          <small class="p-error block mt-1" *ngIf="isFieldInvalid('directeurId')">
+            <i class="fa fa-circle-exclamation mr-1"></i>
+            <ng-container *ngIf="form.get('directeurId')?.errors?.['required']">Le directeur est requis.</ng-container>
+          </small>
+        </div>
+
+        <p-divider styleClass="my-1"></p-divider>
+
+
+
+      </div>
+
+      <!-- ── Action Bar ── -->
+      <div class="action-bar">
+        <button
+          type="button"
+          pButton
+          label="Annuler"
+          icon="fa fa-xmark"
+          severity="secondary"
+          [outlined]="true"
+          (click)="onCancel()">
+        </button>
+        <button
+          type="submit"
+          pButton
+          [label]="isEdit ? 'Enregistrer les modifications' : 'Créer la direction'"
+          [icon]="submitting ? 'fa fa-circle-notch fa-spin' : (isEdit ? 'fa fa-check' : 'fa fa-plus')"
+          [disabled]="submitting">
+        </button>
+      </div>
+
+    </form>
+  </ng-container>
+
+</div>

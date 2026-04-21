@@ -1,0 +1,7 @@
+// Table wrapped in .table-card from styles.scss
+
+:host ::ng-deep {
+  .p-datatable-tbody > tr > td {
+    vertical-align: middle;
+  }
+}

@@ -1,0 +1,112 @@
+<p-confirmDialog></p-confirmDialog>
+
+<div class="fadein animation-duration-400">
+
+  <!-- ==================== HEADER ==================== -->
+  <div class="flex align-items-center gap-3 mb-3">
+    <button pButton icon="fa fa-arrow-left" severity="secondary" [rounded]="true"
+            pTooltip="Retour" (click)="goBack()"></button>
+    <div class="flex-1">
+      @if (isCreateMode) {
+        <h2 class="m-0 text-xl font-bold">Nouveau rôle</h2>
+        <p class="mt-1 mb-0 text-color-secondary text-sm">
+          Créer un rôle métier et lui associer une description.
+        </p>
+      } @else {
+        <h2 class="m-0 text-xl font-bold">{{ role?.roleName }}</h2>
+        <p class="mt-1 mb-0 text-color-secondary text-sm">Édition du rôle</p>
+      }
+    </div>
+
+
+  </div>
+
+  <!-- ==================== LOADING ==================== -->
+  @if (loading) {
+    <div class="flex align-items-center justify-content-center p-6">
+      <i class="fa fa-spinner fa-spin text-3xl text-primary"></i>
+    </div>
+  }
+
+  <!-- ==================== FORM (create + edit) ==================== -->
+  @if (!loading) {
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="grid">
+
+      <div class="col-12 md:col-8">
+        <div class="surface-card border-round-xl border-1 surface-border p-4">
+          <h3 class="mt-0 mb-3 text-lg font-bold flex align-items-center gap-2">
+            <i class="fa fa-id-card text-primary"></i>
+            Informations
+          </h3>
+
+          <div class="grid formgrid p-fluid">
+            <div class="field col-12">
+              <label for="roleName" class="block mb-1 text-sm">Nom du rôle *</label>
+              <input id="roleName" pInputText formControlName="roleName"
+                     [class.ng-invalid]="isFieldInvalid('roleName')"
+                     [class.ng-dirty]="isFieldInvalid('roleName')"
+                     placeholder="Ex: ADMIN, MANAGER…" />
+              @if (isFieldInvalid('roleName')) {
+                <small class="p-error block mt-1">
+                  Nom requis, entre 2 et 50 caractères.
+                </small>
+              }
+            </div>
+
+            <div class="field col-12">
+              <label for="description" class="block mb-1 text-sm">Description</label>
+              <textarea id="description" pInputTextarea formControlName="description"
+                        rows="3" placeholder="Périmètre et responsabilités du rôle"
+                        [class.ng-invalid]="isFieldInvalid('description')"
+                        [class.ng-dirty]="isFieldInvalid('description')"></textarea>
+              @if (isFieldInvalid('description')) {
+                <small class="p-error block mt-1">
+                  Description trop longue (max 300 caractères).
+                </small>
+              }
+            </div>
+          </div>
+
+          <div class="flex justify-content-end gap-2 mt-3">
+            <button type="button" pButton label="Annuler" severity="secondary"
+                    (click)="goBack()"></button>
+            <button type="submit" pButton
+                    [label]="isCreateMode ? 'Créer' : 'Enregistrer'"
+                    icon="fa fa-check"
+                    [loading]="saving" [disabled]="form.invalid || saving"></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Meta + actions (édition seulement) -->
+      @if (!isCreateMode && role) {
+        <div class="col-12 md:col-4">
+          <div class="surface-card border-round-xl border-1 surface-border p-4">
+            <h3 class="mt-0 mb-3 text-lg font-bold flex align-items-center gap-2">
+              <i class="fa fa-circle-info text-primary"></i>
+              Meta
+            </h3>
+            <div class="flex flex-column gap-2 mb-3">
+              <div class="flex align-items-center justify-content-between">
+                <span class="text-color-secondary text-sm">ID</span>
+                <span class="font-semibold">{{ role.roleId }}</span>
+              </div>
+              <div class="flex align-items-center justify-content-between">
+                <span class="text-color-secondary text-sm">Créé le</span>
+                <span class="font-semibold">{{ role.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+              <div class="flex align-items-center justify-content-between">
+                <span class="text-color-secondary text-sm">Modifié le</span>
+                <span class="font-semibold">{{ role.updatedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+            </div>
+
+
+          </div>
+        </div>
+      }
+
+    </form>
+  }
+
+</div>

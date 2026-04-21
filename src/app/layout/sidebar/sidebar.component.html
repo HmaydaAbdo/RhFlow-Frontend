@@ -1,0 +1,79 @@
+<p-sidebar
+  [(visible)]="visible"
+  (onHide)="onHide()"
+  [modal]="true"
+  [dismissible]="true"
+  [showCloseIcon]="false"
+  styleClass="sidebar-drawer"
+  appendTo="body">
+
+  <!-- ── Header / Brand ── -->
+  <ng-template pTemplate="header">
+    <div class="sidebar-brand">
+      <div class="brand-orb">
+        <i class="fa fa-building"></i>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name"><span class="text-primary">RH</span> ERP</div>
+        <div class="brand-sub">Plateforme RH</div>
+      </div>
+      <button
+        pButton
+        icon="fa fa-xmark"
+        severity="secondary"
+        [text]="true"
+        [rounded]="true"
+        class="ml-auto"
+        pTooltip="Fermer"
+        (click)="close()">
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- ── Nav ── -->
+  <nav class="sidebar-nav">
+    <ng-container *ngFor="let item of menuItems">
+
+      <!-- Simple link -->
+      <a *ngIf="item.routerLink && !item.children"
+         [routerLink]="item.routerLink"
+         routerLinkActive="active"
+         [routerLinkActiveOptions]="{ exact: item.routerLink === '/dashboard' }"
+         class="nav-link"
+         pRipple
+         (click)="close()">
+        <i [class]="item.icon" class="nav-icon"></i>
+        <span>{{ item.label }}</span>
+      </a>
+
+      <!-- Group with children -->
+      <ng-container *ngIf="item.children">
+        <button
+          class="nav-link w-full border-none bg-transparent text-left"
+          (click)="toggleGroup(item.label)"
+          pRipple>
+          <i [class]="item.icon" class="nav-icon"></i>
+          <span class="flex-1">{{ item.label }}</span>
+          <i class="fa fa-chevron-down nav-chevron" [class.open]="isGroupOpen(item.label)"></i>
+        </button>
+
+        <div *ngIf="isGroupOpen(item.label)" class="nav-children">
+          <a *ngFor="let child of item.children"
+             [routerLink]="child.routerLink"
+             routerLinkActive="active"
+             [routerLinkActiveOptions]="{ exact: true }"
+             class="nav-link"
+             pRipple
+             (click)="close()">
+            <i [class]="child.icon" class="nav-icon"></i>
+            <span>{{ child.label }}</span>
+          </a>
+        </div>
+      </ng-container>
+
+    </ng-container>
+  </nav>
+
+
+
+</p-sidebar>
