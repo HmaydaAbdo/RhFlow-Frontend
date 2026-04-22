@@ -273,4 +273,3 @@ export class FichePosteFormComponent implements OnInit {
     return this.tokenService.hasAnyRole([RoleName.DRH, RoleName.ADMIN]);
   }
 }
-                                                                                                                                        

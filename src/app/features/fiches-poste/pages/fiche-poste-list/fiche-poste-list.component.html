@@ -205,4 +205,15 @@
   @if (totalRecords > 0) {
     <div class="paginator-card mt-0">
       <p-paginator
-        [totalRec
+        [totalRecords]="totalRecords"
+        [rows]="currentRequest.size"
+        [first]="currentRequest.page * currentRequest.size"
+        [rowsPerPageOptions]="[9, 18, 27]"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="{first}–{last} sur {totalRecords}"
+        (onPageChange)="onPageChange($event)">
+      </p-paginator>
+    </div>
+  }
+
+</div>
