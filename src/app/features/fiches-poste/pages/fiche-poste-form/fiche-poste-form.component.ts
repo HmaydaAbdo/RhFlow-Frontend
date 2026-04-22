@@ -7,7 +7,6 @@ import {
   OnInit
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
@@ -20,7 +19,6 @@ import { FichePosteService } from '../../services/fiche-poste.service';
 import { DirectionService } from '../../../directions/services/direction.service';
 import {
   NIVEAU_ETUDES_OPTIONS,
-  DirectionBrief,
   FichePosteRequest
 } from '../../models/fiche-poste.models';
 import { DirectionResponse, DirectionSearchRequest } from '../../../directions/models/direction.models';
@@ -42,7 +40,6 @@ type DirectionOption = Pick<DirectionResponse, 'id' | 'nom'>;
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     RouterLink,
     ButtonModule,
@@ -52,7 +49,6 @@ type DirectionOption = Pick<DirectionResponse, 'id' | 'nom'>;
     DividerModule,
   ],
   templateUrl: './fiche-poste-form.component.html',
-  styleUrl:    './fiche-poste-form.component.scss',
 })
 export class FichePosteFormComponent implements OnInit {
 
@@ -277,3 +273,4 @@ export class FichePosteFormComponent implements OnInit {
     return this.tokenService.hasAnyRole([RoleName.DRH, RoleName.ADMIN]);
   }
 }
+                                                                                                                                        

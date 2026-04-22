@@ -7,7 +7,6 @@ import {
   OnInit
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
@@ -48,7 +47,6 @@ const DROPDOWN_SCROLL_SEL = '.p-dropdown-items-wrapper';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
     FormsModule,
     ButtonModule,
     InputTextModule,
@@ -277,12 +275,14 @@ export class FichePosteListComponent implements OnInit {
       rejectLabel: 'Annuler',
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
-        this.fichePosteService.delete(fiche.id).subscribe({
-          next: () => {
-            this.notification.success('Fiche de poste supprimée');
-            this.loadFiches();
-          }
-        });
+        this.fichePosteService.delete(fiche.id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.notification.success('Fiche de poste supprimée');
+              this.loadFiches();
+            }
+          });
       }
     });
   }
@@ -299,5 +299,5 @@ export class FichePosteListComponent implements OnInit {
     return this.tokenService.hasAnyRole([RoleName.ADMIN, RoleName.DRH]);
   }
 
-  trackByFiche(_: number, f: FichePosteSummaryResponse): number { return f.id; }
 }
+                                                                         
