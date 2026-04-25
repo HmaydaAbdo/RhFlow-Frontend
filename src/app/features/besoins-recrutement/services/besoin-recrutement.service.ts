@@ -40,6 +40,7 @@ export class BesoinRecrutementService {
     if (request.ficheDePosteId != null) params = params.set('ficheDePosteId', request.ficheDePosteId);
     if (request.statut)                 params = params.set('statut',         request.statut);
     if (request.priorite)               params = params.set('priorite',       request.priorite);
+    if (request.encours        != null) params = params.set('encours',        request.encours);
     if (request.mineOnly)               params = params.set('mineOnly',       'true');
 
     this.http

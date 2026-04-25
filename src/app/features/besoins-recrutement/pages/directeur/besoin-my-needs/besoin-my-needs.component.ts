@@ -8,8 +8,8 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
 import { TagModule } from 'primeng/tag';
@@ -21,14 +21,12 @@ import { BesoinRecrutementService } from '../../../services/besoin-recrutement.s
 import {
   BesoinRecrutementSearchDto,
   BesoinRecrutementSummaryResponse,
-  STATUT_BESOIN_OPTIONS,
   PRIORITE_BESOIN_OPTIONS,
-  StatutBesoin,
   PrioriteBesoin,
   statutLabel,
   prioriteLabel,
   statutSeverity,
-  prioriteSeverity
+  prioriteSeverity, StatutBesoin
 } from '../../../models/besoin-recrutement.models';
 import { PageResponse } from '../../../../../core/models/pagination.models';
 import { NotificationService } from '../../../../../core/services/NotificationService';
@@ -39,7 +37,8 @@ import { NotificationService } from '../../../../../core/services/NotificationSe
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
-    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
     ButtonModule,
     DropdownModule,
     TagModule,
@@ -59,22 +58,24 @@ export class BesoinMyNeedsComponent implements OnInit {
   private readonly router              = inject(Router);
   private readonly cdr                 = inject(ChangeDetectorRef);
   private readonly destroyRef          = inject(DestroyRef);
+  private readonly fb                  = inject(FormBuilder);
+
+  // ── Filter form ──────────────────────────────────────────────────────────
+  readonly filterForm = this.fb.group({
+    priorite: [null as PrioriteBesoin | null],
+  });
 
   // ── State ────────────────────────────────────────────────────────────────
   besoins: BesoinRecrutementSummaryResponse[] = [];
   totalRecords = 0;
   loading      = false;
 
-  selectedStatut:   StatutBesoin   | null = null;
-  selectedPriorite: PrioriteBesoin | null = null;
-
-  readonly statutOptions   = STATUT_BESOIN_OPTIONS;
   readonly prioriteOptions = PRIORITE_BESOIN_OPTIONS;
 
+  // "Mes Besoins" = uniquement encours=true, mineOnly=true
   currentRequest: BesoinRecrutementSearchDto = {
-    page: 0, size: 9, sortBy: 'createdAt', direction: 'desc', mineOnly: true
+    page: 0, size: 9, sortBy: 'createdAt', direction: 'desc', mineOnly: true, encours: true,
   };
-
 
   // ── Lifecycle ────────────────────────────────────────────────────────────
 
@@ -93,30 +94,38 @@ export class BesoinMyNeedsComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(loading => { this.loading = loading; this.cdr.markForCheck(); });
 
+    // Tout changement de filtre déclenche automatiquement le rechargement
+    this.filterForm.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.currentRequest = { ...this.currentRequest, page: 0 };
+        this.loadBesoins();
+      });
+
     this.loadBesoins();
   }
 
   // ── Actions ──────────────────────────────────────────────────────────────
 
   loadBesoins(): void {
-    this.currentRequest.statut   = this.selectedStatut   ?? undefined;
-    this.currentRequest.priorite = this.selectedPriorite ?? undefined;
+    const { priorite } = this.filterForm.value;
+    this.currentRequest = {
+      ...this.currentRequest,
+      priorite: priorite ?? undefined,
+    };
     this.service.loadBesoins(this.currentRequest);
   }
 
-  onStatutFilterChange(): void  { this.currentRequest.page = 0; this.loadBesoins(); }
-  onPrioriteFilterChange(): void { this.currentRequest.page = 0; this.loadBesoins(); }
-
   onClearFilters(): void {
-    this.selectedStatut   = null;
-    this.selectedPriorite = null;
-    this.currentRequest.page = 0;
-    this.loadBesoins();
+    this.filterForm.reset({ priorite: null });
   }
 
   onPageChange(event: PaginatorState): void {
-    this.currentRequest.page = event.page ?? 0;
-    this.currentRequest.size = event.rows ?? 9;
+    this.currentRequest = {
+      ...this.currentRequest,
+      page: event.page ?? 0,
+      size: event.rows ?? 9,
+    };
     this.loadBesoins();
   }
 
@@ -126,13 +135,10 @@ export class BesoinMyNeedsComponent implements OnInit {
     this.router.navigate(['/besoins-recrutement', besoin.id, 'edit']);
   }
 
-
-
-
   // ── Helpers ──────────────────────────────────────────────────────────────
 
   get hasActiveFilters(): boolean {
-    return !!(this.selectedStatut || this.selectedPriorite);
+    return !!this.filterForm.value.priorite;
   }
 
   formatDate(iso: string): string {
@@ -142,10 +148,10 @@ export class BesoinMyNeedsComponent implements OnInit {
   trackByBesoin(_: number, b: BesoinRecrutementSummaryResponse): number { return b.id; }
 
   // ── Enums & helpers exposés au template ──────────────────────────────────
-  readonly StatutBesoin     = StatutBesoin;
   readonly PrioriteBesoin   = PrioriteBesoin;
   readonly statutLabel      = statutLabel;
   readonly prioriteLabel    = prioriteLabel;
   readonly statutSeverity   = statutSeverity;
   readonly prioriteSeverity = prioriteSeverity;
+  protected readonly StatutBesoin = StatutBesoin;
 }

@@ -2,32 +2,33 @@ import { PageRequest } from '../../../core/models/pagination.models';
 
 // ── Enums ──────────────────────────────────────────────────────────────────
 
+/**
+ * Décision DRH sur un besoin de recrutement.
+ * Uniquement valorisé quand encours=false.
+ */
 export enum StatutBesoin {
-  EN_COURS = 'EN_COURS',
-  ACCEPTE  = 'ACCEPTE',
-  REFUSE   = 'REFUSE',
-  ARCHIVE  = 'ARCHIVE'
+  ACCEPTE = 'ACCEPTE',
+  REFUSE  = 'REFUSE'
 }
 
 export enum PrioriteBesoin {
-  HAUTE = 'HAUTE',
+  HAUTE   = 'HAUTE',
   NORMALE = 'NORMALE',
-  BASSE = 'BASSE'
+  BASSE   = 'BASSE'
 }
 
-/** Sous-ensemble de StatutBesoin utilisable comme décision DRH (accepter / refuser). */
+/** Sous-ensemble de StatutBesoin utilisable comme décision DRH. */
 export type DecisionStatut = StatutBesoin.ACCEPTE | StatutBesoin.REFUSE;
+
 export const STATUT_BESOIN_OPTIONS: { label: string; value: StatutBesoin }[] = [
-  { label: 'En cours',  value: StatutBesoin.EN_COURS },
-  { label: 'Accepté',   value: StatutBesoin.ACCEPTE  },
-  { label: 'Refusé',    value: StatutBesoin.REFUSE   },
-  { label: 'Archivé',   value: StatutBesoin.ARCHIVE  }
+  { label: 'Accepté', value: StatutBesoin.ACCEPTE },
+  { label: 'Refusé',  value: StatutBesoin.REFUSE  }
 ];
 
 export const PRIORITE_BESOIN_OPTIONS: { label: string; value: PrioriteBesoin }[] = [
-  { label: 'Haute',    value: PrioriteBesoin.HAUTE   },
-  { label: 'Normale',  value: PrioriteBesoin.NORMALE },
-  { label: 'Basse',    value: PrioriteBesoin.BASSE   }
+  { label: 'Haute',   value: PrioriteBesoin.HAUTE   },
+  { label: 'Normale', value: PrioriteBesoin.NORMALE },
+  { label: 'Basse',   value: PrioriteBesoin.BASSE   }
 ];
 
 // ── Embedded references ────────────────────────────────────────────────────
@@ -59,12 +60,16 @@ export interface BesoinRecrutementResponse {
   directionNom: string;
   directeurId: number;
   directeurNom: string;
+  /** Utilisateur authentifié qui a exprimé le besoin */
+  createdById: number;
+  createdByNom: string;
   nombrePostes: number;
-  dateSouhaitee: string;          // ISO date string
-  justification: string;
+  dateSouhaitee: string;        // ISO date string
   priorite: PrioriteBesoin;
-  statut: StatutBesoin;
-  motifRefus: string | null;
+  /** true = en attente de décision, false = décision prise */
+  encours: boolean;
+  /** null si encours=true (aucune décision encore prise) */
+  statut: StatutBesoin | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -74,11 +79,15 @@ export interface BesoinRecrutementSummaryResponse {
   ficheDePosteIntitule: string;
   directionNom: string;
   directeurNom: string;
+  /** Utilisateur authentifié qui a exprimé le besoin */
+  createdByNom: string;
   nombrePostes: number;
   dateSouhaitee: string;
   priorite: PrioriteBesoin;
-  statut: StatutBesoin;
-  motifRefus: string | null;
+  /** true = en attente de décision, false = décision prise */
+  encours: boolean;
+  /** null si encours=true */
+  statut: StatutBesoin | null;
   createdAt: string;
 }
 
@@ -87,14 +96,12 @@ export interface BesoinRecrutementSummaryResponse {
 export interface BesoinRecrutementRequest {
   ficheDePosteId: number;
   nombrePostes: number;
-  dateSouhaitee: string;          // ISO date string yyyy-MM-dd
-  justification: string;
+  dateSouhaitee: string;        // ISO date string yyyy-MM-dd
   priorite: PrioriteBesoin;
 }
 
 export interface DecisionBesoinRequest {
   statut: DecisionStatut;
-  motifRefus?: string;
 }
 
 // ── Search / filter ────────────────────────────────────────────────────────
@@ -104,6 +111,8 @@ export interface BesoinRecrutementSearchDto extends PageRequest {
   ficheDePosteId?: number;
   statut?: StatutBesoin;
   priorite?: PrioriteBesoin;
+  /** true = uniquement en attente, false = uniquement décidés, undefined = tous */
+  encours?: boolean;
   mineOnly?: boolean;
 }
 
@@ -130,7 +139,8 @@ export interface BesoinStatsResponse {
 
 // ── UI helpers ─────────────────────────────────────────────────────────────
 
-export function statutLabel(s: StatutBesoin): string {
+export function statutLabel(s: StatutBesoin | null): string {
+  if (s === null) return 'En cours';
   return STATUT_BESOIN_OPTIONS.find(o => o.value === s)?.label ?? s;
 }
 
@@ -138,12 +148,19 @@ export function prioriteLabel(p: PrioriteBesoin): string {
   return PRIORITE_BESOIN_OPTIONS.find(o => o.value === p)?.label ?? p;
 }
 
-export function statutSeverity(s: StatutBesoin): 'info' | 'success' | 'danger' | 'secondary' {
-  switch (s) {
-    case StatutBesoin.EN_COURS: return 'info';
-    case StatutBesoin.ACCEPTE:  return 'success';
-    case StatutBesoin.REFUSE:   return 'danger';
-    case StatutBesoin.ARCHIVE:  return 'secondary';
+/**
+ * Severity PrimeNG pour l'affichage du statut.
+ * Les besoins en attente (encours=true, statut=null) affichent 'info'.
+ */
+export function statutSeverity(
+  encours: boolean,
+  statut: StatutBesoin | null
+): 'info' | 'success' | 'danger' {
+  if (encours) return 'info';
+  switch (statut) {
+    case StatutBesoin.ACCEPTE: return 'success';
+    case StatutBesoin.REFUSE:  return 'danger';
+    default:                   return 'info';
   }
 }
 

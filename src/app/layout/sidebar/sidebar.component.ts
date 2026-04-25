@@ -70,16 +70,20 @@ export class SidebarComponent implements OnInit {
 
     // ── Recrutement (section unique, items selon rôles) ─────────────
     if (this.tokenService.hasAnyRole([RoleName.ADMIN, RoleName.DRH, RoleName.DIRECTEUR])) {
+
       const recruitChildren: NavItem[] = [];
 
-      // "Mes recrutements" visible pour tous (DIRECTEUR, et DRH/ADMIN qui ont aussi le rôle DIRECTEUR)
-      recruitChildren.push({ label: 'Mes recrutements', icon: 'fa fa-bullhorn', routerLink: '/besoins-recrutement' });
+      // "Mes Besoins" — encours=true, mineOnly (DIRECTEUR + DRH/ADMIN qui ont aussi le rôle DIRECTEUR)
+      recruitChildren.push({ label: 'Mes Besoins', icon: 'fa fa-bullhorn', routerLink: '/besoins-recrutement' });
 
-      // "Toutes les demandes" uniquement pour ADMIN et DRH
+      // "Tous les besoins" — encours=true, global — uniquement pour ADMIN et DRH
       if (this.tokenService.hasAnyRole([RoleName.ADMIN, RoleName.DRH]))
-        recruitChildren.push({ label: 'Tous les demandes', icon: 'fa fa-list-check', routerLink: '/besoins-recrutement/validation' });
+        recruitChildren.push({ label: 'Tous les besoins', icon: 'fa fa-list-check', routerLink: '/besoins-recrutement/validation' });
 
-      // "Projets de recrutement" visible pour tous les rôles
+      // Archive — encours=false (visible pour tous)
+      recruitChildren.push({ label: 'Archive', icon: 'fa fa-box-archive', routerLink: '/besoins-recrutement/archive' });
+
+      // Projets de recrutement
       recruitChildren.push({ label: 'Projets de recrutement', icon: 'fa fa-briefcase', routerLink: '/projets-recrutement' });
 
       items.push({ label: 'Recrutement', icon: 'fa fa-bullhorn', children: recruitChildren });

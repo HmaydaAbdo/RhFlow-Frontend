@@ -16,14 +16,13 @@ import { DropdownModule } from 'primeng/dropdown';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { DialogModule } from 'primeng/dialog';
-import { DividerModule } from 'primeng/divider';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
-import { Router } from '@angular/router';
-import { BesoinRecrutementService } from '../../../services/besoin-recrutement.service';
-import { DirectionService } from '../../../../directions/services/direction.service';
+import { BesoinRecrutementService } from '../../services/besoin-recrutement.service';
+import { DirectionService } from '../../../directions/services/direction.service';
 import {
   BesoinRecrutementSummaryResponse,
   BesoinRecrutementSearchDto,
+  STATUT_BESOIN_OPTIONS,
   PRIORITE_BESOIN_OPTIONS,
   StatutBesoin,
   PrioriteBesoin,
@@ -32,20 +31,19 @@ import {
   prioriteLabel,
   statutSeverity,
   prioriteSeverity
-} from '../../../models/besoin-recrutement.models';
-import { DirectionResponse, DirectionSearchRequest } from '../../../../directions/models/direction.models';
-import { PageResponse } from '../../../../../core/models/pagination.models';
-import { NotificationService } from '../../../../../core/services/NotificationService';
-import {ConfirmDialogModule} from "primeng/confirmdialog";
+} from '../../models/besoin-recrutement.models';
+import { DirectionResponse, DirectionSearchRequest } from '../../../directions/models/direction.models';
+import {AuthService} from "../../../../core/services/AuthService";
+import {NotificationService} from "../../../../core/services/NotificationService";
+import {PageResponse} from "../../../../core/models/pagination.models";
 
-// ── Constants ────────────────────────────────────────────────────────────────
-const DIRECTION_PAGE_SIZE  = 15;
-const SCROLL_THRESHOLD_PX  = 80;
+const DIRECTION_PAGE_SIZE = 15;
+const SCROLL_THRESHOLD_PX = 80;
 const SCROLL_ATTACH_DELAY  = 50;
 const DROPDOWN_SCROLL_SEL  = '.p-dropdown-items-wrapper';
 
 @Component({
-  selector: 'app-besoin-list',
+  selector: 'app-besoin-archive',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
@@ -57,28 +55,29 @@ const DROPDOWN_SCROLL_SEL  = '.p-dropdown-items-wrapper';
     TagModule,
     TooltipModule,
     DialogModule,
-    DividerModule,
     PaginatorModule,
-    ConfirmDialogModule,
   ],
-  providers: [],
-  templateUrl: './besoin-list.component.html',
-  styleUrl:    './besoin-list.component.scss',
+  templateUrl: './besoin-archive.component.html',
+  styleUrl:    './besoin-archive.component.scss',
 })
-export class BesoinListComponent implements OnInit {
+export class BesoinArchiveComponent implements OnInit {
 
   // ── DI ───────────────────────────────────────────────────────────────────
-  private readonly service             = inject(BesoinRecrutementService);
-  private readonly directionService    = inject(DirectionService);
-  private readonly notification        = inject(NotificationService);
-  private readonly router              = inject(Router);
-  private readonly fb                  = inject(FormBuilder);
-  private readonly cdr                 = inject(ChangeDetectorRef);
-  private readonly destroyRef          = inject(DestroyRef);
+  private readonly service          = inject(BesoinRecrutementService);
+  private readonly directionService = inject(DirectionService);
+  private readonly authService      = inject(AuthService);
+  private readonly notification     = inject(NotificationService);
+  private readonly fb               = inject(FormBuilder);
+  private readonly cdr              = inject(ChangeDetectorRef);
+  private readonly destroyRef       = inject(DestroyRef);
+
+  // ── Role ─────────────────────────────────────────────────────────────────
+  readonly isDrhOrAdmin = this.authService.hasRole('DRH') || this.authService.hasRole('ADMIN');
 
   // ── Filter form ──────────────────────────────────────────────────────────
   readonly filterForm = this.fb.group({
-    directionId: [null as number         | null],
+    directionId: [null as number         | null],   // DRH seulement
+    statut:      [null as StatutBesoin   | null],
     priorite:    [null as PrioriteBesoin | null],
   });
 
@@ -87,14 +86,20 @@ export class BesoinListComponent implements OnInit {
   totalRecords  = 0;
   loading       = false;
 
+  readonly statutOptions   = STATUT_BESOIN_OPTIONS;
   readonly prioriteOptions = PRIORITE_BESOIN_OPTIONS;
 
-  // "Tous les besoins" = uniquement encours=true (les décidés vont dans l'archive)
+  // Archive = encours=false ; mineOnly selon le rôle
   public currentRequest: BesoinRecrutementSearchDto = {
-    page: 0, size: 9, sortBy: 'createdAt', direction: 'desc', encours: true,
+    page:     0,
+    size:     9,
+    sortBy:   'updatedAt',
+    direction: 'desc',
+    encours:  false,
+    mineOnly: !this.isDrhOrAdmin,
   };
 
-  // ── Direction lazy dropdown ──────────────────────────────────────────────
+  // ── Direction lazy dropdown (DRH seulement) ──────────────────────────────
   directions:         DirectionResponse[] = [];
   directionLoading    = false;
   directionPage       = 0;
@@ -111,11 +116,7 @@ export class BesoinListComponent implements OnInit {
   pendingDecision:   DecisionStatut                   | null = null;
   submittingDecision = false;
 
-  // ── Detail dialog ────────────────────────────────────────────────────────
-  showDetailDialog = false;
-  detailBesoin:    BesoinRecrutementSummaryResponse | null = null;
-
-  // ── Pure helpers exposés au template ────────────────────────────────────
+  // ── Helpers ──────────────────────────────────────────────────────────────
   readonly statutLabel      = statutLabel;
   readonly prioriteLabel    = prioriteLabel;
   readonly statutSeverity   = statutSeverity;
@@ -125,15 +126,6 @@ export class BesoinListComponent implements OnInit {
 
   // ── Lifecycle ────────────────────────────────────────────────────────────
   ngOnInit(): void {
-    this.subscribeToBesoins();
-    this.subscribeToLoading();
-    this.subscribeToFilters();
-    this.subscribeToDirectionFilter();
-    this.loadBesoins();
-  }
-
-  // ── Private subscriptions ────────────────────────────────────────────────
-  private subscribeToBesoins(): void {
     this.service.besoins$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((res: PageResponse<BesoinRecrutementSummaryResponse> | null) => {
@@ -142,27 +134,18 @@ export class BesoinListComponent implements OnInit {
         this.totalRecords = res.page.totalElements;
         this.cdr.markForCheck();
       });
-  }
 
-  private subscribeToLoading(): void {
     this.service.loading$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(loading => {
-        this.loading = loading;
-        this.cdr.markForCheck();
-      });
-  }
+      .subscribe(loading => { this.loading = loading; this.cdr.markForCheck(); });
 
-  private subscribeToFilters(): void {
     this.filterForm.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         this.currentRequest = { ...this.currentRequest, page: 0 };
         this.loadBesoins();
       });
-  }
 
-  private subscribeToDirectionFilter(): void {
     this.directionFilter$.pipe(
       debounceTime(300),
       distinctUntilChanged(),
@@ -171,22 +154,24 @@ export class BesoinListComponent implements OnInit {
       this.directionKeyword = keyword;
       this.resetAndLoadDirections();
     });
+
+    this.loadBesoins();
   }
 
   // ── Besoins loading ──────────────────────────────────────────────────────
   private loadBesoins(): void {
-    const { directionId, priorite } = this.filterForm.value;
+    const { directionId, statut, priorite } = this.filterForm.value;
     this.currentRequest = {
       ...this.currentRequest,
       directionId: directionId ?? undefined,
+      statut:      statut      ?? undefined,
       priorite:    priorite    ?? undefined,
     };
     this.service.loadBesoins(this.currentRequest);
   }
 
-  // ── Filter actions ───────────────────────────────────────────────────────
   onClearFilters(): void {
-    this.filterForm.reset({ directionId: null, priorite: null });
+    this.filterForm.reset({ directionId: null, statut: null, priorite: null });
   }
 
   onPageChange(event: PaginatorState): void {
@@ -199,8 +184,8 @@ export class BesoinListComponent implements OnInit {
   }
 
   get hasActiveFilters(): boolean {
-    const { directionId, priorite } = this.filterForm.value;
-    return !!(directionId || priorite);
+    const { directionId, statut, priorite } = this.filterForm.value;
+    return !!(directionId || statut || priorite);
   }
 
   // ── Direction lazy dropdown ──────────────────────────────────────────────
@@ -209,9 +194,7 @@ export class BesoinListComponent implements OnInit {
     setTimeout(() => this.attachDirectionScroll(), SCROLL_ATTACH_DELAY);
   }
 
-  onDirectionHide(): void {
-    this.detachDirectionScroll();
-  }
+  onDirectionHide(): void { this.detachDirectionScroll(); }
 
   onDirectionFilter(event: { filter: string }): void {
     this.directionFilter$.next(event.filter ?? '');
@@ -233,8 +216,9 @@ export class BesoinListComponent implements OnInit {
 
   private onDirectionScroll(event: Event): void {
     const el = event.target as HTMLElement;
-    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < SCROLL_THRESHOLD_PX;
-    if (nearBottom) this.loadNextDirectionPage();
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < SCROLL_THRESHOLD_PX) {
+      this.loadNextDirectionPage();
+    }
   }
 
   private resetAndLoadDirections(): void {
@@ -268,30 +252,18 @@ export class BesoinListComponent implements OnInit {
           this.directionLoading    = false;
           this.cdr.markForCheck();
         },
-        error: () => {
-          this.directionLoading = false;
-          this.cdr.markForCheck();
-        },
+        error: () => { this.directionLoading = false; this.cdr.markForCheck(); },
       });
   }
 
-  // ── Detail dialog ────────────────────────────────────────────────────────
-  openDetail(besoin: BesoinRecrutementSummaryResponse): void {
-    this.detailBesoin     = besoin;
-    this.showDetailDialog = true;
-    this.cdr.markForCheck();
-  }
+  // ── Changer décision (DRH/ADMIN seulement) ───────────────────────────────
+  openChangerDecision(besoin: BesoinRecrutementSummaryResponse): void {
+    // Propose la décision inverse de celle déjà prise
+    const nouvelleDecision: DecisionStatut =
+      besoin.statut === StatutBesoin.ACCEPTE ? StatutBesoin.REFUSE : StatutBesoin.ACCEPTE;
 
-  closeDetail(): void {
-    this.showDetailDialog = false;
-    this.detailBesoin     = null;
-    this.cdr.markForCheck();
-  }
-
-  // ── Decision dialog ──────────────────────────────────────────────────────
-  openDecision(besoin: BesoinRecrutementSummaryResponse, decision: DecisionStatut): void {
     this.decisionTarget     = besoin;
-    this.pendingDecision    = decision;
+    this.pendingDecision    = nouvelleDecision;
     this.showDecisionDialog = true;
     this.cdr.markForCheck();
   }
@@ -314,25 +286,17 @@ export class BesoinListComponent implements OnInit {
       .subscribe({
         next: () => {
           this.notification.success(
-            this.pendingDecision === StatutBesoin.ACCEPTE ? 'Besoin accepté' : 'Besoin refusé'
+            this.pendingDecision === StatutBesoin.ACCEPTE ? 'Décision changée → Accepté' : 'Décision changée → Refusé'
           );
           this.submittingDecision = false;
           this.closeDecision();
           this.loadBesoins();
         },
-        error: () => {
-          this.submittingDecision = false;
-          this.cdr.markForCheck();
-        },
+        error: () => { this.submittingDecision = false; this.cdr.markForCheck(); },
       });
   }
 
-  // ── Edit ────────────────────────────────────────────────────────────────
-  goToEdit(besoin: BesoinRecrutementSummaryResponse): void {
-    this.router.navigate(['/besoins-recrutement', besoin.id, 'edit']);
-  }
-
-  // ── Helpers ──────────────────────────────────────────────────────────────
+  // ── Helper ───────────────────────────────────────────────────────────────
   formatDate(iso: string): string {
     return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
   }

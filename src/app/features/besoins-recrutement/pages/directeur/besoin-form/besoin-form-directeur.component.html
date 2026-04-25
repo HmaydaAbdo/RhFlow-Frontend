@@ -21,12 +21,14 @@
   </div>
 
   <!-- ── Loading Spinner ── -->
-  <div *ngIf="loadingData" class="flex justify-content-center align-items-center py-8">
-    <i class="fa fa-circle-notch fa-spin text-primary" style="font-size: 2rem"></i>
-  </div>
+  @if (loadingData) {
+    <div class="flex justify-content-center align-items-center py-8">
+      <i class="fa fa-circle-notch fa-spin text-primary" style="font-size: 2rem"></i>
+    </div>
+  }
 
   <!-- ── Form ── -->
-  <ng-container *ngIf="!loadingData">
+  @if (!loadingData) {
     <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
 
       <!-- Section: Identification -->
@@ -37,8 +39,6 @@
           <label class="field-label" for="ficheDePoste">
             Fiche de poste <span class="req">*</span>
           </label>
-
-
 
           <p-dropdown
             id="ficheDePoste"
@@ -54,11 +54,13 @@
             [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('ficheDePosteId')}">
 
             <ng-template pTemplate="selectedItem" let-item>
-              <div class="flex align-items-center gap-2" *ngIf="item">
-                <i class="fa fa-file-lines text-primary text-xs"></i>
-                <span>{{ item.intitulePoste }}</span>
-                <span class="text-color-secondary text-xs ml-1">— {{ item.directionNom }}</span>
-              </div>
+              @if (item) {
+                <div class="flex align-items-center gap-2">
+                  <i class="fa fa-file-lines text-primary text-xs"></i>
+                  <span>{{ item.intitulePoste }}</span>
+                  <span class="text-color-secondary text-xs ml-1">— {{ item.directionNom }}</span>
+                </div>
+              }
             </ng-template>
 
             <ng-template pTemplate="item" let-item>
@@ -71,9 +73,10 @@
             </ng-template>
 
           </p-dropdown>
-          <small class="p-error block mt-1" *ngIf="isFieldInvalid('ficheDePosteId')">
-            La fiche de poste est obligatoire.
-          </small>
+
+          @if (isFieldInvalid('ficheDePosteId')) {
+            <small class="p-error block mt-1">La fiche de poste est obligatoire.</small>
+          }
         </div>
       </div>
 
@@ -101,9 +104,9 @@
                 styleClass="w-full"
                 [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('nombrePostes')}">
               </p-inputNumber>
-              <small class="p-error block mt-1" *ngIf="isFieldInvalid('nombrePostes')">
-                Indiquez un nombre entre 1 et 999.
-              </small>
+              @if (isFieldInvalid('nombrePostes')) {
+                <small class="p-error block mt-1">Indiquez un nombre entre 1 et 999.</small>
+              }
             </div>
           </div>
 
@@ -123,12 +126,12 @@
                 styleClass="w-full"
                 [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('dateSouhaitee')}">
               </p-calendar>
-              <small class="p-error block mt-1" *ngIf="isFieldInvalid('dateSouhaitee')">
-                La date souhaitée est obligatoire.
-              </small>
-              <small class="p-error block mt-1" *ngIf="form.get('dateSouhaitee')?.hasError('minDate')">
-                La date ne peut pas être antérieure à aujourd'hui.
-              </small>
+              @if (isFieldInvalid('dateSouhaitee')) {
+                <small class="p-error block mt-1">La date souhaitée est obligatoire.</small>
+              }
+              @if (form.get('dateSouhaitee')?.hasError('minDate')) {
+                <small class="p-error block mt-1">La date ne peut pas être antérieure à aujourd'hui.</small>
+              }
             </div>
           </div>
 
@@ -149,36 +152,6 @@
         </div>
       </div>
 
-      <!-- Section: Justification -->
-      <div class="form-card">
-        <div class="section-label"><i class="fa fa-align-left"></i> Justification</div>
-
-        <div class="field">
-          <label class="field-label" for="justification">
-            Motif / Contexte <span class="req">*</span>
-            <span class="field-opt">(min. 10 caractères)</span>
-          </label>
-          <textarea
-            id="justification"
-            pInputTextarea
-            formControlName="justification"
-            [autoResize]="true"
-            rows="5"
-            placeholder="Décrivez le contexte de votre besoin : départ prévu, croissance d'activité, nouveau projet..."
-            class="w-full"
-            [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('justification')}">
-          </textarea>
-          <div class="flex justify-content-between mt-1">
-            <small class="p-error" *ngIf="isFieldInvalid('justification')">
-              La justification est obligatoire (min. 10 caractères).
-            </small>
-            <small class="text-color-secondary ml-auto">
-              {{ form.get('justification')?.value?.length ?? 0 }} / 2000
-            </small>
-          </div>
-        </div>
-      </div>
-
       <!-- ── Action Bar ── -->
       <div class="action-bar">
         <button
@@ -187,7 +160,6 @@
           label="Annuler"
           icon="fa fa-times"
           severity="secondary"
-
           (click)="onCancel()">
         </button>
         <button
@@ -201,6 +173,6 @@
       </div>
 
     </form>
-  </ng-container>
+  }
 
 </div>

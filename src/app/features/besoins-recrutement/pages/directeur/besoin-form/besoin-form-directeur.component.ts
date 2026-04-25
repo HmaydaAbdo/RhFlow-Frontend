@@ -12,7 +12,6 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
-import { InputTextareaModule } from 'primeng/inputtextarea';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { DropdownModule } from 'primeng/dropdown';
 import { CalendarModule } from 'primeng/calendar';
@@ -38,7 +37,6 @@ import { RoleName } from '../../../../roles/models/role-name.enum';
     ReactiveFormsModule,
     RouterLink,
     ButtonModule,
-    InputTextareaModule,
     InputNumberModule,
     DropdownModule,
     CalendarModule,
@@ -69,7 +67,6 @@ export class BesoinFormDirecteurComponent implements OnInit {
     ficheDePosteId: [null as number | null, Validators.required],
     nombrePostes:   [null as number | null, [Validators.required, Validators.min(1), Validators.max(999)]],
     dateSouhaitee:  [null as Date | null, Validators.required],
-    justification:  ['', [Validators.required, Validators.minLength(10), Validators.maxLength(2000)]],
     priorite:       [null as PrioriteBesoin | null, Validators.required]
   });
 
@@ -130,7 +127,6 @@ export class BesoinFormDirecteurComponent implements OnInit {
           ficheDePosteId: besoin.ficheDePosteId,
           nombrePostes:   besoin.nombrePostes,
           dateSouhaitee:  new Date(besoin.dateSouhaitee),
-          justification:  besoin.justification,
           priorite:       besoin.priorite
         });
         this.loadingData = false;
@@ -163,7 +159,6 @@ export class BesoinFormDirecteurComponent implements OnInit {
       ficheDePosteId: v.ficheDePosteId!,
       nombrePostes:   v.nombrePostes!,
       dateSouhaitee:  this.toIsoDate(v.dateSouhaitee as Date),
-      justification:  v.justification!,
       priorite:       v.priorite as PrioriteBesoin
     };
 
