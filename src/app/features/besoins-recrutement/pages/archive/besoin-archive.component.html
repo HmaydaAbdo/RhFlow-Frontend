@@ -1,3 +1,5 @@
+<p-confirmDialog [style]="{ width: '36rem' }"></p-confirmDialog>
+
 <div class="fadein animation-duration-400">
 
   <!-- ── Page Header ── -->
@@ -132,17 +134,12 @@
             <div class="bs-card">
 
               <!-- Status banner -->
-              <div class="bs-banner"
-                   [ngClass]="besoin.statut === StatutBesoin.ACCEPTE ? 'bs-banner--accepte' : 'bs-banner--refuse'">
-                <span class="bs-status-pill"
-                      [ngClass]="besoin.statut === StatutBesoin.ACCEPTE ? 'bs-status--accepte' : 'bs-status--refuse'">
-                  <i [class]="besoin.statut === StatutBesoin.ACCEPTE ? 'fa fa-circle-check' : 'fa fa-circle-xmark'"></i>
+              <div class="bs-banner" [ngClass]="bannerClass(besoin)">
+                <span class="bs-status-pill" [ngClass]="statusPillClass(besoin)">
+                  <i [class]="statusIcon(besoin)"></i>
                   {{ statutLabel(besoin.statut) }}
                 </span>
-                <span class="bs-priority-pill"
-                      [ngClass]="besoin.priorite === PrioriteBesoin.HAUTE   ? 'bs-prio--haute' :
-                                  besoin.priorite === PrioriteBesoin.NORMALE ? 'bs-prio--normale' :
-                                                                               'bs-prio--faible'">
+                <span class="bs-priority-pill" [ngClass]="priorityPillClass(besoin)">
                   <i class="fa fa-flag"></i>
                   {{ besoin.priorite | titlecase }}
                 </span>
@@ -186,18 +183,31 @@
 
               </div>
 
-              <!-- Actions — uniquement DRH/ADMIN peut changer la décision -->
+              <!-- Actions — DRH/ADMIN uniquement -->
               @if (isDrhOrAdmin) {
                 <div class="bs-actions">
                   <button
                     pButton
-                    [icon]="besoin.statut === StatutBesoin.ACCEPTE ? 'fa fa-circle-xmark' : 'fa fa-circle-check'"
-                    [severity]="besoin.statut === StatutBesoin.ACCEPTE ? 'danger' : 'success'"
+                    [icon]="changeDecisionIcon(besoin)"
+                    [severity]="changeDecisionSeverity(besoin)"
                     [rounded]="true"
                     [text]="true"
-                    [pTooltip]="besoin.statut === StatutBesoin.ACCEPTE ? 'Changer → Refuser' : 'Changer → Accepter'"
+                    [pTooltip]="changeDecisionTooltip(besoin)"
                     tooltipPosition="top"
+                    [disabled]="isDeleting(besoin)"
                     (click)="openChangerDecision(besoin)">
+                  </button>
+                  <button
+                    pButton
+                    icon="fa fa-trash"
+                    severity="danger"
+                    [rounded]="true"
+                    [text]="true"
+                    pTooltip="Supprimer"
+                    tooltipPosition="top"
+                    [loading]="isDeleting(besoin)"
+                    [disabled]="isDeleting(besoin)"
+                    (click)="deleteBesoin(besoin)">
                   </button>
                 </div>
               }
@@ -257,7 +267,7 @@
      DECISION DIALOG (changer décision — DRH)
 ════════════════════════════════════════════════ -->
 <p-dialog
-  [header]="pendingDecision === StatutBesoin.ACCEPTE ? 'Changer → Accepter' : 'Changer → Refuser'"
+  [header]="decisionDialogHeader"
   [(visible)]="showDecisionDialog"
   [modal]="true"
   [draggable]="false"
@@ -299,9 +309,9 @@
     </button>
     <button
       pButton
-      [label]="pendingDecision === StatutBesoin.ACCEPTE ? 'Confirmer → Accepté' : 'Confirmer → Refusé'"
-      [icon]="submittingDecision ? 'fa fa-spinner fa-spin' : (pendingDecision === StatutBesoin.ACCEPTE ? 'fa fa-circle-check' : 'fa fa-circle-xmark')"
-      [severity]="pendingDecision === StatutBesoin.ACCEPTE ? 'success' : 'danger'"
+      [label]="decisionConfirmLabel"
+      [icon]="decisionConfirmIcon"
+      [severity]="decisionConfirmSeverity"
       [loading]="submittingDecision"
       [disabled]="submittingDecision"
       (click)="confirmDecision()">

@@ -16,6 +16,8 @@ import { DropdownModule } from 'primeng/dropdown';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { DialogModule } from 'primeng/dialog';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { BesoinRecrutementService } from '../../services/besoin-recrutement.service';
 import { DirectionService } from '../../../directions/services/direction.service';
@@ -55,21 +57,24 @@ const DROPDOWN_SCROLL_SEL  = '.p-dropdown-items-wrapper';
     TagModule,
     TooltipModule,
     DialogModule,
+    ConfirmDialogModule,
     PaginatorModule,
   ],
+  providers: [ConfirmationService],
   templateUrl: './besoin-archive.component.html',
   styleUrl:    './besoin-archive.component.scss',
 })
 export class BesoinArchiveComponent implements OnInit {
 
   // ── DI ───────────────────────────────────────────────────────────────────
-  private readonly service          = inject(BesoinRecrutementService);
-  private readonly directionService = inject(DirectionService);
-  private readonly authService      = inject(AuthService);
-  private readonly notification     = inject(NotificationService);
-  private readonly fb               = inject(FormBuilder);
-  private readonly cdr              = inject(ChangeDetectorRef);
-  private readonly destroyRef       = inject(DestroyRef);
+  private readonly service             = inject(BesoinRecrutementService);
+  private readonly directionService    = inject(DirectionService);
+  private readonly authService         = inject(AuthService);
+  private readonly notification        = inject(NotificationService);
+  private readonly confirmationService = inject(ConfirmationService);
+  private readonly fb                  = inject(FormBuilder);
+  private readonly cdr                 = inject(ChangeDetectorRef);
+  private readonly destroyRef          = inject(DestroyRef);
 
   // ── Role ─────────────────────────────────────────────────────────────────
   readonly isDrhOrAdmin = this.authService.hasRole('DRH') || this.authService.hasRole('ADMIN');
@@ -115,6 +120,9 @@ export class BesoinArchiveComponent implements OnInit {
   decisionTarget:    BesoinRecrutementSummaryResponse | null = null;
   pendingDecision:   DecisionStatut                   | null = null;
   submittingDecision = false;
+
+  // ── Delete state ─────────────────────────────────────────────────────────
+  deletingId: number | null = null;
 
   // ── Helpers ──────────────────────────────────────────────────────────────
   readonly statutLabel      = statutLabel;
@@ -294,6 +302,92 @@ export class BesoinArchiveComponent implements OnInit {
         },
         error: () => { this.submittingDecision = false; this.cdr.markForCheck(); },
       });
+  }
+
+  // ── CSS-class helpers (statut banner & pills) ────────────────────────────
+  bannerClass(besoin: BesoinRecrutementSummaryResponse): string {
+    return besoin.statut === StatutBesoin.ACCEPTE ? 'bs-banner--accepte' : 'bs-banner--refuse';
+  }
+
+  statusPillClass(besoin: BesoinRecrutementSummaryResponse): string {
+    return besoin.statut === StatutBesoin.ACCEPTE ? 'bs-status--accepte' : 'bs-status--refuse';
+  }
+
+  statusIcon(besoin: BesoinRecrutementSummaryResponse): string {
+    return besoin.statut === StatutBesoin.ACCEPTE ? 'fa fa-circle-check' : 'fa fa-circle-xmark';
+  }
+
+  priorityPillClass(besoin: BesoinRecrutementSummaryResponse): string {
+    if (besoin.priorite === PrioriteBesoin.HAUTE)   return 'bs-prio--haute';
+    if (besoin.priorite === PrioriteBesoin.NORMALE) return 'bs-prio--normale';
+    return 'bs-prio--faible';
+  }
+
+  // ── Change-decision button helpers ───────────────────────────────────────
+  changeDecisionIcon(besoin: BesoinRecrutementSummaryResponse): string {
+    return besoin.statut === StatutBesoin.ACCEPTE ? 'fa fa-circle-xmark' : 'fa fa-circle-check';
+  }
+
+  changeDecisionSeverity(besoin: BesoinRecrutementSummaryResponse):  "success" | "info" | "warning" | "danger" | "help" | "primary" | "secondary" | "contrast" | null | undefined {
+    return besoin.statut === StatutBesoin.ACCEPTE ? 'danger' : 'success';
+  }
+
+  changeDecisionTooltip(besoin: BesoinRecrutementSummaryResponse): string {
+    return besoin.statut === StatutBesoin.ACCEPTE ? 'Changer → Refuser' : 'Changer → Accepter';
+  }
+
+  // ── Decision dialog helpers ───────────────────────────────────────────────
+  get decisionDialogHeader(): string {
+    return this.pendingDecision === StatutBesoin.ACCEPTE ? 'Changer → Accepter' : 'Changer → Refuser';
+  }
+
+  get decisionConfirmLabel(): string {
+    return this.pendingDecision === StatutBesoin.ACCEPTE ? 'Confirmer → Accepté' : 'Confirmer → Refusé';
+  }
+
+  get decisionConfirmIcon(): string {
+    if (this.submittingDecision) return 'fa fa-spinner fa-spin';
+    return this.pendingDecision === StatutBesoin.ACCEPTE ? 'fa fa-circle-check' : 'fa fa-circle-xmark';
+  }
+
+  get decisionConfirmSeverity():  "success" | "info" | "warning" | "danger" | "help" | "primary" | "secondary" | "contrast" | null | undefined {
+    return this.pendingDecision === StatutBesoin.ACCEPTE ? 'success' : 'danger';
+  }
+
+  // ── Delete (DRH/ADMIN uniquement, archive seulement) ────────────────────
+  deleteBesoin(besoin: BesoinRecrutementSummaryResponse): void {
+    this.confirmationService.confirm({
+      message:  `Supprimer définitivement le besoin <strong>${besoin.ficheDePosteIntitule}</strong> ?<br>
+                 <span class="text-sm text-color-secondary">Cette action est irréversible.</span>`,
+      header:   'Confirmer la suppression',
+      icon:     'fa fa-triangle-exclamation text-red-500',
+      acceptLabel:        'Supprimer',
+      rejectLabel:        'Annuler',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-secondary p-button-text',
+      accept: () => {
+        this.deletingId = besoin.id;
+        this.cdr.markForCheck();
+
+        this.service.delete(besoin.id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.notification.success('Besoin supprimé');
+              this.deletingId = null;
+              this.loadBesoins();
+            },
+            error: () => {
+              this.deletingId = null;
+              this.cdr.markForCheck();
+            },
+          });
+      },
+    });
+  }
+
+  isDeleting(besoin: BesoinRecrutementSummaryResponse): boolean {
+    return this.deletingId === besoin.id;
   }
 
   // ── Helper ───────────────────────────────────────────────────────────────

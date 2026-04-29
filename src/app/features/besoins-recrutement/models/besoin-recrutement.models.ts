@@ -64,7 +64,7 @@ export interface BesoinRecrutementResponse {
   createdById: number;
   createdByNom: string;
   nombrePostes: number;
-  dateSouhaitee: string;        // ISO date string
+  dateSouhaitee: string;
   priorite: PrioriteBesoin;
   /** true = en attente de décision, false = décision prise */
   encours: boolean;
