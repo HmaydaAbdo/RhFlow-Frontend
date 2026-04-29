@@ -211,6 +211,63 @@ html.dark-theme {
   color: var(--text-color);
 }
 
+// ── Objet candidature — inline display & edit ─────────────────
+.pr-row--objet {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pr-objet-display {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.pr-objet-val {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--text-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+  font-style: italic;
+  opacity: 0.85;
+}
+
+.pr-objet-edit {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  width: 100%;
+}
+
+.pr-objet-input {
+  flex: 1;
+  font-size: var(--text-xs) !important;
+  padding: 0.25rem 0.5rem !important;
+  height: 1.8rem !important;
+  min-width: 0;
+}
+
+// ── Detail dialog — full-width objet section ──────────────────
+.detail-section--full {
+  grid-column: 1 / -1;
+}
+
+.detail-objet {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-style: italic;
+  font-weight: 500;
+  word-break: break-word;
+}
+
 // ── Direction loading footer ──────────────────────────────────
 .director-loading-footer {
   display: flex;

@@ -18,6 +18,7 @@ export interface ProjetRecrutementResponse {
   id:                   number;
   statut:               StatutProjet;
   nombrePostes:         number;
+  objetCandidature:     string;
   ficheDePosteId:       number;
   ficheDePosteIntitule: string;
   directionId:          number;
@@ -33,11 +34,18 @@ export interface ProjetRecrutementSummaryResponse {
   id:                   number;
   statut:               StatutProjet;
   nombrePostes:         number;
+  objetCandidature:     string;
   ficheDePosteIntitule: string;
   directionNom:         string;
   directeurNom:         string;
   createdAt:            string;
   closedAt:             string | null;
+}
+
+// ── Update requests ────────────────────────────────────────────────────────
+
+export interface UpdateObjetCandidatureRequest {
+  objetCandidature: string;
 }
 
 // ── Search / filter ────────────────────────────────────────────────────────

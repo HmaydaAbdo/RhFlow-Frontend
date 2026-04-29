@@ -19,6 +19,7 @@ import { DividerModule } from 'primeng/divider';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
+import { InputTextModule } from 'primeng/inputtext';
 
 import { ProjetRecrutementService } from '../../services/projet-recrutement.service';
 import { DirectionService } from '../../../directions/services/direction.service';
@@ -29,6 +30,7 @@ import {
   ProjetRecrutementSummaryResponse,
   ProjetRecrutementResponse,
   ProjetRecrutementSearchDto,
+  UpdateObjetCandidatureRequest,
   STATUT_PROJET_OPTIONS,
   StatutProjet,
   statutProjetLabel,
@@ -58,6 +60,7 @@ const DROPDOWN_SCROLL_SEL = '.p-dropdown-items-wrapper';
     DividerModule,
     PaginatorModule,
     ConfirmDialogModule,
+    InputTextModule,
   ],
   providers: [ConfirmationService],
   templateUrl: './projet-list.component.html',
@@ -101,6 +104,11 @@ export class ProjetListComponent implements OnInit {
   private directionScrollEl:    Element       | null = null;
   private directionScrollBound: EventListener | null = null;
   private readonly directionFilter$ = new Subject<string>();
+
+  // ── Objet candidature — inline edit (DRH/ADMIN) ─────────────────────────
+  editingObjetId:  number | null = null;
+  editObjetValue   = '';
+  savingObjet      = false;
 
   // ── Detail dialog ────────────────────────────────────────────────────────
   showDetailDialog  = false;
@@ -303,6 +311,55 @@ export class ProjetListComponent implements OnInit {
           }
         });
       }
+    });
+  }
+
+  // ── Objet candidature — inline edit ──────────────────────────────────────
+
+  openEditObjet(projet: ProjetRecrutementSummaryResponse): void {
+    this.editingObjetId = projet.id;
+    this.editObjetValue = projet.objetCandidature;
+    this.cdr.markForCheck();
+  }
+
+  cancelEditObjet(): void {
+    this.editingObjetId = null;
+    this.editObjetValue = '';
+    this.cdr.markForCheck();
+  }
+
+  saveObjet(projet: ProjetRecrutementSummaryResponse): void {
+    const trimmed = this.editObjetValue.trim();
+    if (!trimmed || trimmed === projet.objetCandidature) {
+      this.cancelEditObjet();
+      return;
+    }
+
+    this.savingObjet = true;
+    this.cdr.markForCheck();
+
+    const request: UpdateObjetCandidatureRequest = { objetCandidature: trimmed };
+    this.service.updateObjetCandidature(projet.id, request)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: updated => {
+          projet.objetCandidature = updated.objetCandidature;
+          this.editingObjetId = null;
+          this.editObjetValue = '';
+          this.savingObjet    = false;
+          this.notification.success('Objet de candidature mis à jour');
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.savingObjet = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  copyObjet(objet: string): void {
+    navigator.clipboard.writeText(objet).then(() => {
+      this.notification.success('Objet copié dans le presse-papier');
     });
   }
 

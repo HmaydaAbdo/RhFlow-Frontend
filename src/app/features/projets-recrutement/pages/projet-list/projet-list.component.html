@@ -135,6 +135,71 @@
                 <span class="pr-lbl"><i class="fa fa-calendar-xmark"></i>Fermé le</span>
                 <span class="pr-val closed-date">{{ formatDate(projet.closedAt) }}</span>
               </div>
+
+              <!-- Objet de candidature -->
+              <div class="pr-row pr-row--objet">
+                <span class="pr-lbl"><i class="fa fa-envelope"></i>Objet mail</span>
+                <!-- Mode affichage -->
+                <div *ngIf="editingObjetId !== projet.id" class="pr-objet-display">
+                  <span class="pr-objet-val" [pTooltip]="projet.objetCandidature" tooltipPosition="top">
+                    {{ projet.objetCandidature }}
+                  </span>
+                  <button
+                    pButton
+                    icon="fa fa-copy"
+                    [text]="true"
+                    [rounded]="true"
+                    severity="secondary"
+                    pTooltip="Copier l'objet"
+                    tooltipPosition="top"
+                    (click)="copyObjet(projet.objetCandidature)">
+                  </button>
+                  <button
+                    *ngIf="isDrhOrAdmin"
+                    pButton
+                    icon="fa fa-pen"
+                    [text]="true"
+                    [rounded]="true"
+                    severity="secondary"
+                    pTooltip="Modifier l'objet"
+                    tooltipPosition="top"
+                    (click)="openEditObjet(projet)">
+                  </button>
+                </div>
+                <!-- Mode édition (DRH/ADMIN uniquement) -->
+                <div *ngIf="isDrhOrAdmin && editingObjetId === projet.id" class="pr-objet-edit">
+                  <input
+                    pInputText
+                    [(ngModel)]="editObjetValue"
+                    [maxlength]="255"
+                    class="pr-objet-input"
+                    (keyup.enter)="saveObjet(projet)"
+                    (keyup.escape)="cancelEditObjet()" />
+                  <button
+                    pButton
+                    icon="fa fa-check"
+                    [text]="true"
+                    [rounded]="true"
+                    severity="success"
+                    [loading]="savingObjet"
+                    pTooltip="Enregistrer"
+                    tooltipPosition="top"
+                    (click)="saveObjet(projet)">
+                  </button>
+                  <button
+                    pButton
+                    icon="fa fa-times"
+                    [text]="true"
+                    [rounded]="true"
+                    severity="secondary"
+                    [disabled]="savingObjet"
+                    pTooltip="Annuler"
+                    tooltipPosition="top"
+                    (click)="cancelEditObjet()">
+                  </button>
+                </div>
+              </div>
+
             </div>
 
           </div>
@@ -270,6 +335,23 @@
       <div class="detail-section">
         <span class="detail-label">Besoin source</span>
         <span class="detail-value text-color-secondary">#{{ p.besoinRecrutementId }}</span>
+      </div>
+
+      <div class="detail-section detail-section--full">
+        <span class="detail-label"><i class="fa fa-envelope mr-1"></i>Objet de candidature</span>
+        <span class="detail-value detail-objet">
+          {{ p.objetCandidature }}
+          <button
+            pButton
+            icon="fa fa-copy"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            pTooltip="Copier"
+            tooltipPosition="top"
+            (click)="copyObjet(p.objetCandidature)">
+          </button>
+        </span>
       </div>
 
       <div class="detail-section">

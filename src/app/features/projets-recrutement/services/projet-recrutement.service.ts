@@ -6,7 +6,8 @@ import { PageResponse } from '../../../core/models/pagination.models';
 import {
   ProjetRecrutementResponse,
   ProjetRecrutementSearchDto,
-  ProjetRecrutementSummaryResponse
+  ProjetRecrutementSummaryResponse,
+  UpdateObjetCandidatureRequest
 } from '../models/projet-recrutement.models';
 
 @Injectable({ providedIn: 'root' })
@@ -54,5 +55,9 @@ export class ProjetRecrutementService {
 
   fermer(id: number): Observable<ProjetRecrutementResponse> {
     return this.http.patch<ProjetRecrutementResponse>(`${this.baseUrl}/${id}/fermer`, {});
+  }
+
+  updateObjetCandidature(id: number, request: UpdateObjetCandidatureRequest): Observable<ProjetRecrutementResponse> {
+    return this.http.patch<ProjetRecrutementResponse>(`${this.baseUrl}/${id}/objet-candidature`, request);
   }
 }

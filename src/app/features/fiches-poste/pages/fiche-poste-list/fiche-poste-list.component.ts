@@ -58,7 +58,6 @@ const DROPDOWN_SCROLL_SEL = '.p-dropdown-items-wrapper';
   ],
   providers: [ConfirmationService],
   templateUrl: './fiche-poste-list.component.html',
-  styleUrl: './fiche-poste-list.component.scss'
 })
 export class FichePosteListComponent implements OnInit {
 
