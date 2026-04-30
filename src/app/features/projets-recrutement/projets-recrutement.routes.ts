@@ -11,4 +11,12 @@ export const PROJETS_RECRUTEMENT_ROUTES: Routes = [
       import('./pages/projet-list/projet-list.component')
         .then(c => c.ProjetListComponent),
   },
+  {
+    path: ':projetId/offre',
+    canActivate: [roleGuard],
+    data: { roles: [RoleName.ADMIN, RoleName.DRH, RoleName.DIRECTEUR] },
+    loadComponent: () =>
+      import('../offres/pages/offre-view/offre-view.component')
+        .then(c => c.OffreViewComponent),
+  },
 ];

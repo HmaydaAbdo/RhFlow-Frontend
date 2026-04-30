@@ -20,6 +20,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 
+import { Router } from '@angular/router';
 import { ProjetRecrutementService } from '../../services/projet-recrutement.service';
 import { DirectionService } from '../../../directions/services/direction.service';
 import { TokenService } from '../../../../core/services/TokenService';
@@ -73,6 +74,7 @@ export class ProjetListComponent implements OnInit {
   private readonly tokenService     = inject(TokenService);
   private readonly notification     = inject(NotificationService);
   private readonly confirmService   = inject(ConfirmationService);
+  private readonly router           = inject(Router);
   private readonly cdr              = inject(ChangeDetectorRef);
   private readonly destroyRef       = inject(DestroyRef);
 
@@ -372,4 +374,8 @@ export class ProjetListComponent implements OnInit {
   }
 
   trackByProjet(_: number, p: ProjetRecrutementSummaryResponse): number { return p.id; }
+
+  goToOffre(projet: ProjetRecrutementSummaryResponse): void {
+    this.router.navigate(['/projets-recrutement', projet.id, 'offre']);
+  }
 }

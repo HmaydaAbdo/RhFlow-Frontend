@@ -230,6 +230,16 @@
                   tooltipPosition="top"
                   (click)="openDetail(projet)">
                 </button>
+                <button
+                  pButton
+                  icon="fa fa-file-lines"
+                  severity="primary"
+                  [rounded]="true"
+                  [text]="true"
+                  pTooltip="Voir / générer l'offre"
+                  tooltipPosition="top"
+                  (click)="goToOffre(projet)">
+                </button>
                 @if (isDrhOrAdmin && projet.statut === StatutProjet.OUVERT) {
                   <button
                     pButton
@@ -396,6 +406,16 @@
       severity="secondary"
       (click)="closeDetail()">
     </button>
+    @if (detailProjet) {
+      <button
+        pButton
+        label="Voir l'offre"
+        icon="fa fa-file-lines"
+        severity="primary"
+        [outlined]="true"
+        (click)="closeDetail(); goToOffre(detailProjet!)">
+      </button>
+    }
     @if (isDrhOrAdmin && detailFull?.statut === StatutProjet.OUVERT) {
       <button
         pButton
