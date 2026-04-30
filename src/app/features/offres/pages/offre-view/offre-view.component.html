@@ -1,0 +1,169 @@
+<p-confirmDialog [style]="{ width: '38rem' }"></p-confirmDialog>
+
+<div class="fadein animation-duration-400">
+
+  <!-- ── Page Header ─────────────────────────────────────────────────────── -->
+  <div class="page-hero mb-4">
+    <div class="flex align-items-center gap-3">
+      <button
+        pButton
+        icon="fa fa-arrow-left"
+        [text]="true"
+        [rounded]="true"
+        severity="secondary"
+        pTooltip="Retour aux projets"
+        (click)="goBack()">
+      </button>
+      <div class="hero-icon">
+        <i class="fa fa-file-lines"></i>
+      </div>
+      <div>
+        <h2 class="hero-title">
+          @if (offre) { {{ offre.ficheDePosteIntitule }} }
+          @else { Offre de recrutement }
+        </h2>
+        <p class="hero-sub">Contenu généré par IA · Markdown LinkedIn</p>
+      </div>
+    </div>
+
+    <!-- Actions globales -->
+    @if (isDrhOrAdmin && !generating) {
+      <div class="flex align-items-center gap-2">
+        @if (offre && !editMode) {
+          <button
+            pButton
+            icon="fa fa-copy"
+            label="Copier"
+            severity="secondary"
+            [outlined]="true"
+            pTooltip="Copier le Markdown"
+            (click)="copyMarkdown()">
+          </button>
+          <button
+            pButton
+            icon="fa fa-pen"
+            label="Éditer"
+            severity="secondary"
+            [outlined]="true"
+            (click)="openEdit()">
+          </button>
+          <button
+            pButton
+            icon="fa fa-rotate-right"
+            label="Régénérer"
+            severity="warning"
+            [outlined]="true"
+            (click)="generer()">
+          </button>
+        }
+        @if (!offre && !loading) {
+          <button
+            pButton
+            icon="fa fa-wand-magic-sparkles"
+            label="Générer l'offre"
+            severity="primary"
+            (click)="generer()">
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- ── Génération IA en cours ───────────────────────────────────────────── -->
+  @if (generating) {
+    <div class="flex flex-column align-items-center justify-content-center py-8 gap-3">
+      <i class="fa fa-circle-notch fa-spin text-primary" style="font-size: 2.5rem"></i>
+      <p class="text-color-secondary text-sm m-0">L'IA rédige l'offre, cela peut prendre quelques secondes…</p>
+    </div>
+  }
+
+  <!-- ── Chargement initial ───────────────────────────────────────────────── -->
+  @if (loading && !generating) {
+    <div class="flex justify-content-center align-items-center py-8">
+      <i class="fa fa-circle-notch fa-spin text-primary" style="font-size: 2rem"></i>
+    </div>
+  }
+
+  <!-- ── Aucune offre encore générée ─────────────────────────────────────── -->
+  @if (!loading && !generating && !offre) {
+    <div class="empty-state">
+      <div class="empty-icon">
+        <i class="fa fa-file-circle-plus"></i>
+      </div>
+      <h3 class="mt-3 mb-1">Aucune offre générée</h3>
+      <p class="text-color-secondary text-sm mb-3">
+        Cliquez sur <b>Générer l'offre</b> pour que l'IA rédige une offre LinkedIn basée sur la fiche de poste.
+      </p>
+      @if (isDrhOrAdmin) {
+        <button
+          pButton
+          icon="fa fa-wand-magic-sparkles"
+          label="Générer l'offre"
+          severity="primary"
+          (click)="generer()">
+        </button>
+      }
+    </div>
+  }
+
+  <!-- ── Offre chargée ────────────────────────────────────────────────────── -->
+  @if (!loading && !generating && offre) {
+
+    <!-- Méta-info -->
+    <div class="flex align-items-center gap-3 mb-4 flex-wrap">
+      <span class="fp-chip">
+        <i class="fa fa-envelope"></i>
+        Objet : <b>{{ offre.objetCandidature }}</b>
+      </span>
+      <span class="fp-chip fp-chip--secondary">
+        <i class="fa fa-clock"></i>
+        Générée le {{ formatDate(offre.generatedAt) }}
+      </span>
+      @if (offre.updatedAt !== offre.generatedAt) {
+        <span class="fp-chip fp-chip--secondary">
+          <i class="fa fa-pen-clip"></i>
+          Modifiée le {{ formatDate(offre.updatedAt) }}
+        </span>
+      }
+    </div>
+
+    <!-- ── MODE ÉDITION ────────────────────────────────────────────────── -->
+    @if (editMode) {
+      <div class="offre-edit-wrapper">
+        <textarea
+          pTextarea
+          [formControl]="editCtrl"
+          [autoResize]="false"
+          rows="28"
+          class="offre-textarea w-full">
+        </textarea>
+        <div class="flex gap-2 justify-content-end mt-3">
+          <button
+            pButton
+            label="Annuler"
+            icon="fa fa-times"
+            severity="secondary"
+            [outlined]="true"
+            [disabled]="saving"
+            (click)="cancelEdit()">
+          </button>
+          <button
+            pButton
+            label="Enregistrer"
+            icon="fa fa-check"
+            severity="success"
+            [loading]="saving"
+            (click)="saveEdit()">
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- ── MODE APERÇU ─────────────────────────────────────────────────── -->
+    @if (!editMode) {
+      <div class="offre-preview" [innerHTML]="offre.contenu | markdown"></div>
+    }
+
+  }
+
+</div>
