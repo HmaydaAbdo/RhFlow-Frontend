@@ -1,5 +1,5 @@
-import {Component, DestroyRef, inject, OnInit} from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, OnInit} from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   FormBuilder,
@@ -34,8 +34,8 @@ import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 @Component({
   selector: 'app-role-edit',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
     DatePipe,
     ReactiveFormsModule,
     ButtonModule,
@@ -50,7 +50,8 @@ import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 })
 export class RoleEditComponent implements OnInit {
 
-  private destroyRef = inject(DestroyRef);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly cdr        = inject(ChangeDetectorRef);
 
   isCreateMode = false;
   role: RoleResponse | null = null;
@@ -101,6 +102,7 @@ export class RoleEditComponent implements OnInit {
           description: role.description ?? '',
         });
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.notification.error('Rôle introuvable');
@@ -128,9 +130,10 @@ export class RoleEditComponent implements OnInit {
         next: (created) => {
           this.notification.success('Rôle créé avec succès');
           this.saving = false;
+          this.cdr.markForCheck();
           this.router.navigate(['/roles']);
         },
-        error: () => (this.saving = false),
+        error: () => { this.saving = false; this.cdr.markForCheck(); },
       });
     } else if (this.role) {
       this.roleService.updateRole(this.role.roleId, payload)
@@ -140,9 +143,10 @@ export class RoleEditComponent implements OnInit {
           this.role = updated;
           this.notification.success('Rôle mis à jour');
           this.saving = false;
+          this.cdr.markForCheck();
           this.router.navigate(['/roles']);
         },
-        error: () => (this.saving = false),
+        error: () => { this.saving = false; this.cdr.markForCheck(); },
       });
     }
   }

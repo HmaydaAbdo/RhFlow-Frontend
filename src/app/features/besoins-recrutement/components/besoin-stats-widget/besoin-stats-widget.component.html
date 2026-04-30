@@ -1,10 +1,12 @@
 <!-- ── Loading Spinner ── -->
-<div *ngIf="loading" class="flex justify-content-center align-items-center py-8">
-  <i class="fa fa-circle-notch fa-spin text-primary" style="font-size: 2rem"></i>
-</div>
+@if (loading) {
+  <div class="flex justify-content-center align-items-center py-8">
+    <i class="fa fa-circle-notch fa-spin text-primary" style="font-size: 2rem"></i>
+  </div>
+}
 
 <!-- ── Content ── -->
-<ng-container *ngIf="!loading && stats">
+@if (!loading && stats) {
 
   <!-- Section title + link -->
   <div class="widget-header">
@@ -55,38 +57,46 @@
   </div>
 
   <!-- Charts row -->
-  <div class="charts-row" *ngIf="stats.total > 0">
+  @if (stats.total > 0) {
+    <div class="charts-row">
 
-    <!-- Bar chart: par direction -->
-    <div class="chart-box" *ngIf="stats.parDirection.length > 0">
-      <div class="chart-title">Par direction</div>
-      <div class="chart-container">
-        <p-chart type="bar" [data]="barChartData" [options]="barChartOptions" height="160px"></p-chart>
-      </div>
+      @if (stats.parDirection.length > 0) {
+        <!-- Bar chart: par direction -->
+        <div class="chart-box">
+          <div class="chart-title">Par direction</div>
+          <div class="chart-container">
+            <p-chart type="bar" [data]="barChartData" [options]="barChartOptions" height="160px"></p-chart>
+          </div>
+        </div>
+      }
+
+      @if (stats.parPriorite.length > 0) {
+        <!-- Doughnut: par priorité -->
+        <div class="chart-box">
+          <div class="chart-title">Par priorité</div>
+          <div class="chart-container">
+            <p-chart type="doughnut" [data]="doughnutChartData" [options]="doughnutChartOptions" height="160px"></p-chart>
+          </div>
+        </div>
+      }
+
     </div>
-
-    <!-- Doughnut: par priorité -->
-    <div class="chart-box" *ngIf="stats.parPriorite.length > 0">
-      <div class="chart-title">Par priorité</div>
-      <div class="chart-container">
-        <p-chart type="doughnut" [data]="doughnutChartData" [options]="doughnutChartOptions" height="160px"></p-chart>
-      </div>
-    </div>
-
-  </div>
+  }
 
   <!-- Empty state -->
-  <div class="widget-empty" *ngIf="stats.total === 0">
-    <i class="fa fa-bullhorn text-color-secondary" style="font-size:1.75rem; opacity: 0.3"></i>
-    <p class="text-sm text-color-secondary mt-2 mb-0">Aucun besoin en recrutement pour l'instant.</p>
-  </div>
+  @if (stats.total === 0) {
+    <div class="widget-empty">
+      <i class="fa fa-bullhorn text-color-secondary" style="font-size:1.75rem; opacity: 0.3"></i>
+      <p class="text-sm text-color-secondary mt-2 mb-0">Aucun besoin en recrutement pour l'instant.</p>
+    </div>
+  }
 
-</ng-container>
+}
 
 <!-- Error state -->
-<ng-container *ngIf="!loading && !stats">
+@if (!loading && !stats) {
   <div class="widget-empty">
     <i class="fa fa-triangle-exclamation text-color-secondary" style="font-size:1.5rem; opacity: 0.3"></i>
     <p class="text-sm text-color-secondary mt-2 mb-0">Impossible de charger les statistiques.</p>
   </div>
-</ng-container>
+}

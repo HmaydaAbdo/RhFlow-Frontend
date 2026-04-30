@@ -1,5 +1,4 @@
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   FormBuilder,
@@ -30,8 +29,8 @@ import { NotificationService } from '../../../../core/services/NotificationServi
 @Component({
   selector: 'app-user-edit',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     ButtonModule,
     InputTextModule,
@@ -47,7 +46,8 @@ import { NotificationService } from '../../../../core/services/NotificationServi
 })
 export class UserEditComponent implements OnInit {
 
-  private destroyRef = inject(DestroyRef);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly cdr        = inject(ChangeDetectorRef);
 
   // ===== Mode =====
   isCreateMode = false;
@@ -159,6 +159,7 @@ export class UserEditComponent implements OnInit {
           });
           this.enabledControl.setValue(user.enabled, { emitEvent: false });
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.notification.error('Utilisateur introuvable');
@@ -172,7 +173,10 @@ export class UserEditComponent implements OnInit {
     this.roleService.roles$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((page) => {
-        if (page) this.allRoles = page.content;
+        if (page) {
+          this.allRoles = page.content;
+          this.cdr.markForCheck();
+        }
       });
   }
 
@@ -197,9 +201,10 @@ export class UserEditComponent implements OnInit {
         next: (created) => {
           this.notification.success('Utilisateur créé avec succès');
           this.saving = false;
+          this.cdr.markForCheck();
           this.router.navigate(['/users', created.id]);
         },
-        error: () => (this.saving = false),
+        error: () => { this.saving = false; this.cdr.markForCheck(); },
       });
   }
 
@@ -226,8 +231,9 @@ export class UserEditComponent implements OnInit {
           });
           this.notification.success('Utilisateur mis à jour');
           this.saving = false;
+          this.cdr.markForCheck();
         },
-        error: () => (this.saving = false),
+        error: () => { this.saving = false; this.cdr.markForCheck(); },
       });
   }
 

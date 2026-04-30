@@ -7,8 +7,7 @@ import {
   OnInit
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
@@ -38,6 +37,7 @@ import {
 } from '../../models/projet-recrutement.models';
 import { DirectionResponse, DirectionSearchRequest } from '../../../directions/models/direction.models';
 import { PageResponse } from '../../../../core/models/pagination.models';
+import {NgClass} from "@angular/common";
 
 // ── Constants ───────────────────────────────────────────────────────────────
 const DIRECTION_PAGE_SIZE = 15;
@@ -50,8 +50,7 @@ const DROPDOWN_SCROLL_SEL = '.p-dropdown-items-wrapper';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
-    FormsModule,
+    ReactiveFormsModule,
     ButtonModule,
     DropdownModule,
     TagModule,
@@ -61,10 +60,10 @@ const DROPDOWN_SCROLL_SEL = '.p-dropdown-items-wrapper';
     PaginatorModule,
     ConfirmDialogModule,
     InputTextModule,
+    NgClass,
   ],
   providers: [ConfirmationService],
   templateUrl: './projet-list.component.html',
-  styleUrl:    './projet-list.component.scss',
 })
 export class ProjetListComponent implements OnInit {
 
@@ -82,8 +81,10 @@ export class ProjetListComponent implements OnInit {
   totalRecords  = 0;
   loading       = false;
 
-  selectedStatut:      StatutProjet | null = null;
-  selectedDirectionId: number       | null = null;
+  readonly filtersForm = new FormGroup({
+    directionId: new FormControl<number | null>(null),
+    statut:      new FormControl<StatutProjet | null>(null),
+  });
 
   readonly statutOptions = STATUT_PROJET_OPTIONS;
 
@@ -106,9 +107,9 @@ export class ProjetListComponent implements OnInit {
   private readonly directionFilter$ = new Subject<string>();
 
   // ── Objet candidature — inline edit (DRH/ADMIN) ─────────────────────────
-  editingObjetId:  number | null = null;
-  editObjetValue   = '';
-  savingObjet      = false;
+  editingObjetId: number | null = null;
+  editObjetCtrl   = new FormControl<string>('', { nonNullable: true });
+  savingObjet     = false;
 
   // ── Detail dialog ────────────────────────────────────────────────────────
   showDetailDialog  = false;
@@ -158,10 +159,11 @@ export class ProjetListComponent implements OnInit {
 
   // ── Loading ──────────────────────────────────────────────────────────────
   private loadProjets(): void {
+    const { directionId, statut } = this.filtersForm.value;
     this.currentRequest = {
       ...this.currentRequest,
-      directionId: this.selectedDirectionId ?? undefined,
-      statut:      this.selectedStatut      ?? undefined,
+      directionId: directionId ?? undefined,
+      statut:      statut      ?? undefined,
     };
     this.service.loadProjets(this.currentRequest);
   }
@@ -173,9 +175,8 @@ export class ProjetListComponent implements OnInit {
   }
 
   onClearFilters(): void {
-    this.selectedStatut      = null;
-    this.selectedDirectionId = null;
-    this.currentRequest      = { ...this.currentRequest, page: 0 };
+    this.filtersForm.reset({ directionId: null, statut: null });
+    this.currentRequest = { ...this.currentRequest, page: 0 };
     this.loadProjets();
   }
 
@@ -189,7 +190,8 @@ export class ProjetListComponent implements OnInit {
   }
 
   get hasActiveFilters(): boolean {
-    return !!(this.selectedStatut || this.selectedDirectionId);
+    const { statut, directionId } = this.filtersForm.value;
+    return !!(statut || directionId != null);
   }
 
   // ── Direction lazy dropdown ──────────────────────────────────────────────
@@ -318,18 +320,18 @@ export class ProjetListComponent implements OnInit {
 
   openEditObjet(projet: ProjetRecrutementSummaryResponse): void {
     this.editingObjetId = projet.id;
-    this.editObjetValue = projet.objetCandidature;
+    this.editObjetCtrl.setValue(projet.objetCandidature);
     this.cdr.markForCheck();
   }
 
   cancelEditObjet(): void {
     this.editingObjetId = null;
-    this.editObjetValue = '';
+    this.editObjetCtrl.reset('');
     this.cdr.markForCheck();
   }
 
   saveObjet(projet: ProjetRecrutementSummaryResponse): void {
-    const trimmed = this.editObjetValue.trim();
+    const trimmed = this.editObjetCtrl.value.trim();
     if (!trimmed || trimmed === projet.objetCandidature) {
       this.cancelEditObjet();
       return;
@@ -345,7 +347,7 @@ export class ProjetListComponent implements OnInit {
         next: updated => {
           projet.objetCandidature = updated.objetCandidature;
           this.editingObjetId = null;
-          this.editObjetValue = '';
+          this.editObjetCtrl.reset('');
           this.savingObjet    = false;
           this.notification.success('Objet de candidature mis à jour');
           this.cdr.markForCheck();

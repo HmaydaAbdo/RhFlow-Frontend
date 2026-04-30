@@ -7,7 +7,6 @@ import {
   OnInit
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -30,13 +29,13 @@ import {
 } from '../../../models/besoin-recrutement.models';
 import { PageResponse } from '../../../../../core/models/pagination.models';
 import { NotificationService } from '../../../../../core/services/NotificationService';
+import {NgClass, TitleCasePipe} from "@angular/common";
 
 @Component({
   selector: 'app-besoin-my-needs-directeur',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     RouterModule,
     ButtonModule,
@@ -45,10 +44,11 @@ import { NotificationService } from '../../../../../core/services/NotificationSe
     TooltipModule,
     ConfirmDialogModule,
     PaginatorModule,
+    NgClass,
+    TitleCasePipe,
   ],
   providers: [ConfirmationService],
   templateUrl: './besoin-my-needs.component.html',
-  styleUrl: './besoin-myNeeds.component.scss'
 })
 export class BesoinMyNeedsComponent implements OnInit {
 

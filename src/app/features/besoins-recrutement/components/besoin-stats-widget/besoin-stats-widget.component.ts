@@ -7,7 +7,6 @@ import {
   OnInit
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { ChartModule } from 'primeng/chart';
@@ -19,13 +18,11 @@ import { BesoinStatsResponse } from '../../models/besoin-recrutement.models';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
     RouterLink,
     ButtonModule,
     ChartModule
   ],
   templateUrl: './besoin-stats-widget.component.html',
-  styleUrl: './besoin-stats-widget.component.scss'
 })
 export class BesoinStatsWidgetComponent implements OnInit {
 

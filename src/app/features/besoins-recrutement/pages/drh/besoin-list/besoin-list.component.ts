@@ -7,7 +7,6 @@ import {
   OnInit
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { RouterModule } from '@angular/router';
@@ -37,6 +36,7 @@ import { DirectionResponse, DirectionSearchRequest } from '../../../../direction
 import { PageResponse } from '../../../../../core/models/pagination.models';
 import { NotificationService } from '../../../../../core/services/NotificationService';
 import {ConfirmDialogModule} from "primeng/confirmdialog";
+import {NgClass, TitleCasePipe} from "@angular/common";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const DIRECTION_PAGE_SIZE  = 15;
@@ -49,7 +49,6 @@ const DROPDOWN_SCROLL_SEL  = '.p-dropdown-items-wrapper';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     RouterModule,
     ButtonModule,
@@ -60,10 +59,11 @@ const DROPDOWN_SCROLL_SEL  = '.p-dropdown-items-wrapper';
     DividerModule,
     PaginatorModule,
     ConfirmDialogModule,
+    NgClass,
+    TitleCasePipe,
   ],
   providers: [],
   templateUrl: './besoin-list.component.html',
-  styleUrl:    './besoin-list.component.scss',
 })
 export class BesoinListComponent implements OnInit {
 

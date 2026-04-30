@@ -7,9 +7,9 @@ import {
   OnInit
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, merge, Subject } from 'rxjs';
 
 // PrimeNG Modules
 import { ButtonModule } from 'primeng/button';
@@ -47,7 +47,7 @@ const DROPDOWN_SCROLL_SEL = '.p-dropdown-items-wrapper';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    FormsModule,
+    ReactiveFormsModule,
     ButtonModule,
     InputTextModule,
     DropdownModule,
@@ -75,12 +75,14 @@ export class FichePosteListComponent implements OnInit {
   fiches: FichePosteSummaryResponse[] = [];
   totalRecords = 0;
   loading = false;
-  keyword = '';
-  selectedDirectionId: number | null = null;
-  selectedNiveauEtudes: NiveauEtudes | null = null;
 
   readonly niveauEtudesOptions = NIVEAU_ETUDES_OPTIONS;
-  private readonly searchSubject$ = new Subject<string>();
+
+  readonly filtersForm = new FormGroup({
+    intitulePoste: new FormControl<string>('', { nonNullable: true }),
+    directionId:   new FormControl<number | null>(null),
+    niveauEtudes:  new FormControl<NiveauEtudes | null>(null),
+  });
 
   currentRequest: FichePosteSearchRequest = {
     page: 0, size: 9, sortBy: 'id', direction: 'asc'
@@ -98,7 +100,7 @@ export class FichePosteListComponent implements OnInit {
 
   // ── Lifecycle ────────────────────────────────────────────────────────────
   ngOnInit(): void {
-    this.initSearchSub();
+    this.initFilterSub();
     this.initDirectionFilterSub();
     this.initDataStreamSub();
 
@@ -108,16 +110,28 @@ export class FichePosteListComponent implements OnInit {
   }
 
   // ── Subscriptions ────────────────────────────────────────────────────────
-  private initSearchSub(): void {
-    this.searchSubject$.pipe(
+  private initFilterSub(): void {
+    // Keyword: debounce + reset page
+    this.filtersForm.controls.intitulePoste.valueChanges.pipe(
       debounceTime(300),
       distinctUntilChanged(),
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe(keyword => {
+    ).subscribe(() => {
       this.currentRequest.page = 0;
-      this.currentRequest.intitulePoste = keyword || undefined;
+      this.applyFiltersToRequest();
       this.fichePosteService.loadFiches(this.currentRequest);
     });
+
+    // Direction + niveau: immediate
+    merge(
+      this.filtersForm.controls.directionId.valueChanges,
+      this.filtersForm.controls.niveauEtudes.valueChanges,
+    ).pipe(takeUntilDestroyed(this.destroyRef))
+     .subscribe(() => {
+       this.currentRequest.page = 0;
+       this.applyFiltersToRequest();
+       this.fichePosteService.loadFiches(this.currentRequest);
+     });
   }
 
   private initDirectionFilterSub(): void {
@@ -154,28 +168,19 @@ export class FichePosteListComponent implements OnInit {
 
   // ── Fiche Poste Logic ────────────────────────────────────────────────────
   loadFiches(): void {
-    this.currentRequest.intitulePoste = this.keyword || undefined;
-    this.currentRequest.directionId = this.selectedDirectionId ?? undefined;
-    this.currentRequest.niveauEtudes = this.selectedNiveauEtudes ?? undefined;
+    this.applyFiltersToRequest();
     this.fichePosteService.loadFiches(this.currentRequest);
   }
 
-  onSearchChange(value: string): void { this.searchSubject$.next(value); }
-
-  onDirectionFilterChange(): void {
-    this.currentRequest.page = 0;
-    this.loadFiches();
-  }
-
-  onNiveauEtudesFilterChange(): void {
-    this.currentRequest.page = 0;
-    this.loadFiches();
+  private applyFiltersToRequest(): void {
+    const { intitulePoste, directionId, niveauEtudes } = this.filtersForm.value;
+    this.currentRequest.intitulePoste = intitulePoste || undefined;
+    this.currentRequest.directionId   = directionId   ?? undefined;
+    this.currentRequest.niveauEtudes  = niveauEtudes  ?? undefined;
   }
 
   onClearFilters(): void {
-    this.keyword = '';
-    this.selectedDirectionId = null;
-    this.selectedNiveauEtudes = null;
+    this.filtersForm.reset({ intitulePoste: '', directionId: null, niveauEtudes: null });
     this.currentRequest.page = 0;
     this.loadFiches();
   }
@@ -291,7 +296,8 @@ export class FichePosteListComponent implements OnInit {
   }
 
   get hasActiveFilters(): boolean {
-    return !!(this.keyword || this.selectedDirectionId || this.selectedNiveauEtudes);
+    const { intitulePoste, directionId, niveauEtudes } = this.filtersForm.value;
+    return !!(intitulePoste || directionId != null || niveauEtudes != null);
   }
 
   canAddOrEdit(): boolean {

@@ -37,7 +37,6 @@ const PAGE_SIZE = 15;
     DividerModule,
   ],
   templateUrl: './direction-form.component.html',
-  styleUrl: './direction-form.component.scss',
 })
 export class DirectionFormComponent implements OnInit {
 

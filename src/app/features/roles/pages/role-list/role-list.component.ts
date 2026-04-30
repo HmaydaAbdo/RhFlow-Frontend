@@ -1,5 +1,5 @@
-import {Component, DestroyRef, inject, OnInit} from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, OnInit} from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
@@ -22,8 +22,8 @@ import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 @Component({
   selector: 'app-role-list',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
     DatePipe,
     ReactiveFormsModule,
     RouterLink,
@@ -39,8 +39,8 @@ import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 })
 export class RoleListComponent implements OnInit {
 
-
-  private destroyRef = inject(DestroyRef);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly cdr        = inject(ChangeDetectorRef);
 
   roles: RoleResponse[] = [];
   totalRecords = 0;
@@ -78,12 +78,16 @@ export class RoleListComponent implements OnInit {
         if (res) {
           this.roles = res.content;
           this.totalRecords = res.page.totalElements;
+          this.cdr.markForCheck();
         }
       });
 
     this.roleService.loading$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((loading) => (this.loading = loading));
+      .subscribe((loading) => {
+        this.loading = loading;
+        this.cdr.markForCheck();
+      });
 
     this.filtersForm.controls.keyword.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))

@@ -1,5 +1,4 @@
-import {Component, DestroyRef, inject, OnInit} from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, OnInit} from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import {  debounceTime, distinctUntilChanged } from 'rxjs';
@@ -28,8 +27,8 @@ interface EnabledOption {
 @Component({
   selector: 'app-user-list',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     RouterLink,
     TableModule,
@@ -45,7 +44,8 @@ interface EnabledOption {
 })
 export class UserListComponent implements OnInit {
 
-  private destroyRef=inject(DestroyRef)
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly cdr        = inject(ChangeDetectorRef);
 
   users: UserResponse[] = [];
   totalRecords = 0;
@@ -90,12 +90,16 @@ export class UserListComponent implements OnInit {
         if (res) {
           this.users = res.content;
           this.totalRecords = res.page.totalElements;
+          this.cdr.markForCheck();
         }
       });
 
     this.userService.loading$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((loading) => (this.loading = loading));
+      .subscribe((loading) => {
+        this.loading = loading;
+        this.cdr.markForCheck();
+      });
 
     // Recherche temps réel + filtre statut, debounced.
     this.filtersForm.valueChanges

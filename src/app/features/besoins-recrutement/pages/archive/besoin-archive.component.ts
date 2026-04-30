@@ -7,7 +7,6 @@ import {
   OnInit
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { RouterModule } from '@angular/router';
@@ -38,6 +37,7 @@ import { DirectionResponse, DirectionSearchRequest } from '../../../directions/m
 import {AuthService} from "../../../../core/services/AuthService";
 import {NotificationService} from "../../../../core/services/NotificationService";
 import {PageResponse} from "../../../../core/models/pagination.models";
+import {NgClass, TitleCasePipe} from "@angular/common";
 
 const DIRECTION_PAGE_SIZE = 15;
 const SCROLL_THRESHOLD_PX = 80;
@@ -49,7 +49,6 @@ const DROPDOWN_SCROLL_SEL  = '.p-dropdown-items-wrapper';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     RouterModule,
     ButtonModule,
@@ -59,10 +58,11 @@ const DROPDOWN_SCROLL_SEL  = '.p-dropdown-items-wrapper';
     DialogModule,
     ConfirmDialogModule,
     PaginatorModule,
+    TitleCasePipe,
+    NgClass,
   ],
   providers: [ConfirmationService],
   templateUrl: './besoin-archive.component.html',
-  styleUrl:    './besoin-archive.component.scss',
 })
 export class BesoinArchiveComponent implements OnInit {
 

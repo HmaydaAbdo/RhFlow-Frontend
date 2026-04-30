@@ -7,7 +7,6 @@ import {
   OnInit
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -27,13 +26,13 @@ import { FichePosteSummaryResponse } from '../../../../fiches-poste/models/fiche
 import { NotificationService } from '../../../../../core/services/NotificationService';
 import { TokenService } from '../../../../../core/services/TokenService';
 import { RoleName } from '../../../../roles/models/role-name.enum';
+import {NgClass} from "@angular/common";
 
 @Component({
   selector: 'app-besoin-form-directeur',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     RouterLink,
     ButtonModule,
@@ -41,10 +40,10 @@ import { RoleName } from '../../../../roles/models/role-name.enum';
     DropdownModule,
     CalendarModule,
     DividerModule,
-    SelectButtonModule
+    SelectButtonModule,
+    NgClass
   ],
   templateUrl: './besoin-form-directeur.component.html',
-  styleUrl: './besoin-form-directeur.component.scss'
 })
 export class BesoinFormDirecteurComponent implements OnInit {
 

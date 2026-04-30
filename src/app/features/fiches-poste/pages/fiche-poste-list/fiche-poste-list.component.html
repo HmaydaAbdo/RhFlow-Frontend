@@ -23,22 +23,21 @@
   </div>
 
   <!-- ── Filter Bar ── -->
-  <div class="filter-bar">
+  <form [formGroup]="filtersForm" class="filter-bar">
     <span class="p-input-icon-left" style="flex: 1; min-width: 200px">
       <i class="fa fa-magnifying-glass"></i>
       <input
         type="text"
         pInputText
-        [(ngModel)]="keyword"
+        formControlName="intitulePoste"
         placeholder="Rechercher un poste..."
         class="w-full"
-        (ngModelChange)="onSearchChange($event)"
       />
     </span>
 
     <p-dropdown
       [options]="directions"
-      [(ngModel)]="selectedDirectionId"
+      formControlName="directionId"
       optionLabel="nom"
       optionValue="id"
       placeholder="Toutes les directions"
@@ -49,8 +48,7 @@
       styleClass="filter-dropdown"
       (onShow)="onDirectionShow()"
       (onHide)="onDirectionHide()"
-      (onFilter)="onDirectionFilter($event)"
-      (onChange)="onDirectionFilterChange()">
+      (onFilter)="onDirectionFilter($event)">
 
       <ng-template pTemplate="selectedItem" let-item>
         @if (item) {
@@ -84,14 +82,13 @@
 
     <p-dropdown
       [options]="niveauEtudesOptions"
-      [(ngModel)]="selectedNiveauEtudes"
+      formControlName="niveauEtudes"
       optionLabel="label"
       optionValue="value"
       placeholder="Niveau d'études"
       [showClear]="true"
       appendTo="body"
-      styleClass="filter-dropdown"
-      (onChange)="onNiveauEtudesFilterChange()">
+      styleClass="filter-dropdown">
     </p-dropdown>
 
     @if (hasActiveFilters) {
@@ -105,7 +102,7 @@
         (click)="onClearFilters()">
       </button>
     }
-  </div>
+  </form>
 
   <!-- ── Loading Spinner ── -->
   @if (loading) {
