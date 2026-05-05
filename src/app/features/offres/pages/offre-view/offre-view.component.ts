@@ -13,7 +13,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { TextareaModule } from 'primeng/textarea';
+import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ConfirmationService } from 'primeng/api';
 
 import { OffreService } from '../../services/offre.service';
@@ -32,11 +32,12 @@ import { MarkdownPipe } from '../../pipes/markdown.pipe';
     ButtonModule,
     TooltipModule,
     ConfirmDialogModule,
-    TextareaModule,
+    InputTextareaModule,
     MarkdownPipe,
   ],
   providers: [ConfirmationService],
   templateUrl: './offre-view.component.html',
+  styleUrl:    './offre-view.component.scss',
 })
 export class OffreViewComponent implements OnInit {
 
@@ -171,12 +172,41 @@ export class OffreViewComponent implements OnInit {
       });
   }
 
-  // ── Copier ──────────────────────────────────────────────────────────────────
+  // ── Copier (texte LinkedIn, sans syntaxe Markdown) ─────────────────────────
   copyMarkdown(): void {
     if (!this.offre) return;
-    navigator.clipboard.writeText(this.offre.contenu).then(() => {
-      this.notification.success('Offre copiée dans le presse-papier');
+    const text = this.toLinkedInText(this.offre.contenu);
+    navigator.clipboard.writeText(text).then(() => {
+      this.notification.success('Offre copiée — prête à coller sur LinkedIn');
     });
+  }
+
+  /** Convertit le Markdown en texte brut LinkedIn-friendly. */
+  private toLinkedInText(md: string): string {
+    return md
+      // Titres → MAJUSCULES + saut de ligne avant
+      .replace(/^#{1,6}\s+(.+)$/gm, (_, t: string) => '\n' + t.toUpperCase())
+      // Gras
+      .replace(/\*\*(.+?)\*\*/g, '$1')
+      // Italique (* ou _)
+      .replace(/\*(.+?)\*/g, '$1')
+      .replace(/_(.+?)_/g, '$1')
+      // Listes non ordonnées → bullet •
+      .replace(/^[ \t]*[-*+]\s+/gm, '• ')
+      // Listes ordonnées → conservées telles quelles (1. 2. …)
+      // Liens → texte seul
+      .replace(/\[(.+?)\]\(.+?\)/g, '$1')
+      // Bloc de code (``` … ```)
+      .replace(/```[\w]*\n?([\s\S]*?)```/g, '$1')
+      // Code inline
+      .replace(/`(.+?)`/g, '$1')
+      // Blockquote → préfixe ❝
+      .replace(/^>\s*/gm, '❝ ')
+      // Séparateur horizontal → tirets
+      .replace(/^-{3,}$/gm, '──────────────')
+      // Nettoyer les lignes vides multiples (> 2)
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
   }
 
   // ── Navigation ──────────────────────────────────────────────────────────────
