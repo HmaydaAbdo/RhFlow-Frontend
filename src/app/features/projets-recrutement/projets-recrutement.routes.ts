@@ -19,4 +19,10 @@ export const PROJETS_RECRUTEMENT_ROUTES: Routes = [
       import('../offres/pages/offre-view/offre-view.component')
         .then(c => c.OffreViewComponent),
   },
+  {
+    path: ':projetId/candidatures',
+    loadChildren: () =>
+      import('../candidatures/candidatures.routes')
+        .then(r => r.CANDIDATURES_ROUTES),
+  },
 ];
