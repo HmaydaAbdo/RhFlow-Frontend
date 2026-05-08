@@ -378,4 +378,11 @@ export class ProjetListComponent implements OnInit {
   goToOffre(projet: ProjetRecrutementSummaryResponse): void {
     this.router.navigate(['/projets-recrutement', projet.id, 'offre']);
   }
+
+  goToCandidatures(projetId: number): void {
+    this.router.navigate(['/projets-recrutement', projetId, 'candidatures']);
+  }
 }
+
+
+

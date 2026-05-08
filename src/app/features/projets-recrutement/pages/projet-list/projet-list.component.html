@@ -240,6 +240,16 @@
                   tooltipPosition="top"
                   (click)="goToOffre(projet)">
                 </button>
+                <button
+                  pButton
+                  icon="fa fa-users"
+                  severity="info"
+                  [rounded]="true"
+                  [text]="true"
+                  pTooltip="Voir les candidatures"
+                  tooltipPosition="top"
+                  (click)="goToCandidatures(projet.id)">
+                </button>
                 @if (isDrhOrAdmin && projet.statut === StatutProjet.OUVERT) {
                   <button
                     pButton
@@ -407,6 +417,14 @@
       (click)="closeDetail()">
     </button>
     @if (detailProjet) {
+      <button
+        pButton
+        label="Candidatures"
+        icon="fa fa-users"
+        severity="info"
+        [outlined]="true"
+        (click)="closeDetail(); goToCandidatures(detailProjet!.id)">
+      </button>
       <button
         pButton
         label="Voir l'offre"
