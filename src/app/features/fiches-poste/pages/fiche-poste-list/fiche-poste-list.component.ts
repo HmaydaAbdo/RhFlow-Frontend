@@ -111,27 +111,15 @@ export class FichePosteListComponent implements OnInit {
 
   // ── Subscriptions ────────────────────────────────────────────────────────
   private initFilterSub(): void {
-    // Keyword: debounce + reset page
-    this.filtersForm.controls.intitulePoste.valueChanges.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
+    // On écoute TOUT le formulaire d'un coup
+    this.filtersForm.valueChanges.pipe(
+      debounceTime(300), // Évite les doubles requêtes
+      distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(() => {
-      this.currentRequest.page = 0;
-      this.applyFiltersToRequest();
-      this.fichePosteService.loadFiches(this.currentRequest);
+      this.currentRequest.page = 0; // Reset page à 0 lors d'un filtrage
+      this.loadFiches();
     });
-
-    // Direction + niveau: immediate
-    merge(
-      this.filtersForm.controls.directionId.valueChanges,
-      this.filtersForm.controls.niveauEtudes.valueChanges,
-    ).pipe(takeUntilDestroyed(this.destroyRef))
-     .subscribe(() => {
-       this.currentRequest.page = 0;
-       this.applyFiltersToRequest();
-       this.fichePosteService.loadFiches(this.currentRequest);
-     });
   }
 
   private initDirectionFilterSub(): void {
