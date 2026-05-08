@@ -1,0 +1,121 @@
+<p-dialog
+  header="Ajouter un CV"
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '32rem', maxWidth: '95vw' }"
+  [closable]="state !== 'uploading'"
+  (onHide)="onHide()">
+
+  <!-- ══ IDLE / ERROR — Zone drag-drop ══ -->
+  @if (state === 'idle' || state === 'error') {
+    <div
+      class="upload-drop-zone"
+      [ngClass]="{ 'upload-drop-zone--drag': dragging, 'upload-drop-zone--error': state === 'error' }"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)">
+
+      <i class="fa fa-cloud-arrow-up upload-drop-icon"
+         [ngClass]="{ 'text-red-400': state === 'error' }"></i>
+
+      <p class="upload-drop-title">
+        Glissez votre CV ici
+      </p>
+      <p class="upload-drop-sub">
+        ou
+      </p>
+
+      <label class="upload-browse-btn">
+        <i class="fa fa-folder-open mr-2"></i>Parcourir
+        <input
+          type="file"
+          [accept]="accept"
+          (change)="onFileInput($event)"
+          style="display:none">
+      </label>
+
+      <p class="upload-accepted">PDF ou DOCX — max {{ 10 }} Mo</p>
+
+      @if (state === 'error') {
+        <div class="upload-error-msg">
+          <i class="fa fa-triangle-exclamation"></i>
+          {{ errorMessage }}
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ══ SELECTED — Aperçu fichier ══ -->
+  @if (state === 'selected') {
+    <div class="upload-file-preview">
+      <div class="upload-file-icon">
+        <i [class]="fileIcon"></i>
+      </div>
+      <div class="upload-file-info">
+        <span class="upload-file-name">{{ selectedFile?.name }}</span>
+        <span class="upload-file-size">{{ formatSize(selectedFile?.size ?? 0) }}</span>
+      </div>
+      <button
+        pButton
+        icon="fa fa-times"
+        [text]="true"
+        [rounded]="true"
+        severity="secondary"
+        pTooltip="Retirer le fichier"
+        (click)="removeFile()">
+      </button>
+    </div>
+  }
+
+  <!-- ══ UPLOADING — Envoi en cours ══ -->
+  @if (state === 'uploading') {
+    <div class="upload-status-block">
+      <i class="fa fa-circle-notch fa-spin upload-status-icon text-primary"></i>
+      <p class="upload-status-title">Envoi du CV en cours...</p>
+      <p class="upload-status-sub">Veuillez patienter</p>
+    </div>
+  }
+
+  <!-- ══ DONE — Succès ══ -->
+  @if (state === 'done') {
+    <div class="upload-status-block">
+      <i class="fa fa-circle-check upload-status-icon text-green-500"></i>
+      <p class="upload-status-title">CV soumis avec succès</p>
+      <p class="upload-status-sub">
+        L'analyse IA va démarrer — rafraîchissez la liste pour voir le résultat.
+      </p>
+    </div>
+  }
+
+  <!-- ══ Footer ══ -->
+  <ng-template pTemplate="footer">
+    @if (state === 'idle' || state === 'error') {
+      <button
+        pButton
+        label="Annuler"
+        icon="fa fa-times"
+        severity="secondary"
+        (click)="onHide()">
+      </button>
+    }
+    @if (state === 'selected') {
+      <button
+        pButton
+        label="Annuler"
+        icon="fa fa-times"
+        severity="secondary"
+        (click)="onHide()">
+      </button>
+      <button
+        pButton
+        label="Envoyer le CV"
+        icon="fa fa-paper-plane"
+        severity="primary"
+        (click)="upload()">
+      </button>
+    }
+  </ng-template>
+
+</p-dialog>

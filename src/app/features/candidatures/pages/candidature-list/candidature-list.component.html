@@ -1,0 +1,314 @@
+<p-confirmDialog [style]="{ width: '36rem' }"></p-confirmDialog>
+
+<app-upload-cv-dialog
+  [projetId]="projetId"
+  [(visible)]="showUploadDialog"
+  (uploadDone)="onUploadDone()">
+</app-upload-cv-dialog>
+
+
+<div class="fadein animation-duration-400">
+
+  <!-- ── Breadcrumb ── -->
+  <nav class="breadcrumb">
+    <a (click)="goBack()" style="cursor:pointer">
+      <i class="fa fa-briefcase mr-1 text-xs"></i>Projets de recrutement
+    </a>
+    <span class="sep"><i class="fa fa-chevron-right"></i></span>
+    <span class="current">{{ nomPoste || 'Candidatures' }}</span>
+    <span class="sep"><i class="fa fa-chevron-right"></i></span>
+    <span class="current">Candidatures</span>
+  </nav>
+
+  <!-- ── Page Header ── -->
+  <div class="page-hero mb-4">
+    <div class="flex align-items-center gap-3">
+      <div class="hero-icon">
+        <i class="fa fa-users"></i>
+      </div>
+      <div>
+        <h2 class="hero-title">Candidatures</h2>
+        <p class="hero-sub">
+          @if (nomPoste) { Poste : <strong>{{ nomPoste }}</strong> }
+          @else { Gestion et évaluation IA des candidatures }
+        </p>
+      </div>
+    </div>
+    <div class="flex align-items-center gap-2">
+      <span class="count-badge">
+        <i class="fa fa-user-group mr-1 text-xs"></i>{{ totalRecords }} candidature(s)
+      </span>
+      <button
+        pButton
+        label="Ajouter un CV"
+        icon="fa fa-plus"
+        severity="primary"
+        (click)="openUpload()">
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Filters ── -->
+  <form [formGroup]="filtersForm" class="filter-bar">
+
+    <p-dropdown
+      [options]="statutOptions"
+      formControlName="statut"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="Tous les statuts"
+      [showClear]="true"
+      styleClass="filter-dropdown"
+      (onChange)="onFilterChange()"
+      (onClear)="onFilterChange()">
+    </p-dropdown>
+
+    <p-dropdown
+      [options]="recommandationOpts"
+      formControlName="recommandation"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="Toutes les recommandations"
+      [showClear]="true"
+      styleClass="filter-dropdown"
+      (onChange)="onFilterChange()"
+      (onClear)="onFilterChange()">
+    </p-dropdown>
+
+    <p-dropdown
+      [options]="scoreMinOptions"
+      formControlName="scoreMin"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="Tous les scores"
+      [showClear]="true"
+      styleClass="filter-dropdown"
+      (onChange)="onFilterChange()"
+      (onClear)="onFilterChange()">
+    </p-dropdown>
+
+    @if (hasActiveFilters) {
+      <button
+        pButton
+        icon="fa fa-filter-circle-xmark"
+        severity="secondary"
+        [rounded]="true"
+        pTooltip="Effacer les filtres"
+        (click)="onClearFilters()">
+      </button>
+    }
+
+  </form>
+
+  <!-- ── Banner rafraîchissement manuel ── -->
+  @if (hasPipelineRunning && !loading) {
+    <div class="cd-pipeline-banner mb-3">
+      <i class="fa fa-robot"></i>
+      <span>Des analyses IA sont en cours — rafraîchissez pour voir les résultats.</span>
+      <button pButton label="Rafraîchir" icon="fa fa-rotate" severity="info" [outlined]="true" (click)="loadList()" style="margin-left:auto"></button>
+    </div>
+  }
+
+  <!-- ── Loading ── -->
+  @if (loading) {
+    <div class="flex justify-content-center align-items-center py-8">
+      <i class="fa fa-circle-notch fa-spin text-primary" style="font-size: 2rem"></i>
+    </div>
+  } @else {
+
+    <!-- ── Card Grid ── -->
+    @if (candidatures.length > 0) {
+      <div class="grid">
+        @for (c of candidatures; track c.id) {
+          <div class="col-12 md:col-6 lg:col-4">
+            <div class="cv-card">
+
+              <!-- Banner : statut + score -->
+              <div class="cv-banner" [ngClass]="'cv-banner--' + c.statut.toLowerCase()">
+
+                <span class="cv-status-pill" [ngClass]="'cv-status--' + c.statut.toLowerCase()">
+                  @switch (c.statut) {
+                    @case (StatutCandidature.RECU)     { <i class="fa fa-inbox"></i> }
+                    @case (StatutCandidature.EN_COURS) { <i class="fa fa-circle-notch fa-spin"></i> }
+                    @case (StatutCandidature.EVALUE)   { <i class="fa fa-circle-check"></i> }
+                    @case (StatutCandidature.ERREUR)   { <i class="fa fa-triangle-exclamation"></i> }
+                    @case (StatutCandidature.RETENU)   { <i class="fa fa-check-double"></i> }
+                    @case (StatutCandidature.REJETE)   { <i class="fa fa-ban"></i> }
+                  }
+                  {{ statutCandidatureLabel(c.statut) }}
+                </span>
+
+                @if (c.scoreMatching != null) {
+                  <span class="cv-score-badge" [ngClass]="'cv-score--' + scoreSeverity(c.scoreMatching)">
+                    {{ c.scoreMatching }}<span class="cv-score-max">/100</span>
+                  </span>
+                }
+
+              </div>
+
+              <!-- Body -->
+              <div class="cv-body">
+
+                <!-- Nom candidat ou nom fichier -->
+                <h3 class="cv-title"
+                    [pTooltip]="c.nomCandidat || c.nomFichier"
+                    tooltipPosition="top">
+                  {{ c.nomCandidat || '—' }}
+                </h3>
+
+                <!-- Nom fichier -->
+                <span class="cv-filename">
+                  <i class="fa fa-file-word"></i>{{ c.nomFichier }}
+                </span>
+
+                <!-- Recommandation -->
+                @if (c.recommandation) {
+                  <div class="mt-1">
+                    <p-tag
+                      [value]="recommandationLabel(c.recommandation)"
+                      [severity]="recommandationSeverity(c.recommandation)"
+                      [rounded]="true">
+                    </p-tag>
+                  </div>
+                }
+
+                <!-- Infos candidat -->
+                <div class="cv-info">
+                  @if (c.emailCandidat) {
+                    <div class="cv-row">
+                      <span class="cv-lbl"><i class="fa fa-envelope"></i>Email</span>
+                      <span class="cv-val" [pTooltip]="c.emailCandidat" tooltipPosition="top">
+                        {{ c.emailCandidat }}
+                      </span>
+                    </div>
+                  }
+                  @if (c.telephoneCandidat) {
+                    <div class="cv-row">
+                      <span class="cv-lbl"><i class="fa fa-phone"></i>Tél</span>
+                      <span class="cv-val">{{ c.telephoneCandidat }}</span>
+                    </div>
+                  }
+                  <div class="cv-row">
+                    <span class="cv-lbl"><i class="fa fa-calendar-plus"></i>Déposé le</span>
+                    <span class="cv-val">{{ formatDate(c.deposeLe) }}</span>
+                  </div>
+                  @if (c.evalueLe) {
+                    <div class="cv-row">
+                      <span class="cv-lbl"><i class="fa fa-robot"></i>Évalué le</span>
+                      <span class="cv-val">{{ formatDate(c.evalueLe) }}</span>
+                    </div>
+                  }
+                </div>
+
+                <!-- Message d'erreur IA -->
+                @if (c.statut === StatutCandidature.ERREUR && c.justificationIa) {
+                  <div class="cv-erreur">
+                    <i class="fa fa-triangle-exclamation"></i>
+                    {{ c.justificationIa }}
+                  </div>
+                }
+
+                <!-- Pipeline en cours -->
+                @if (isPipelineRunning(c.statut)) {
+                  <div class="cv-erreur" style="background:rgba(59,130,246,.07);border-color:rgba(59,130,246,.18);color:#2563eb;">
+                    <i class="fa fa-circle-notch fa-spin"></i>
+                    Analyse IA en cours...
+                  </div>
+                }
+
+              </div>
+
+              <!-- Actions footer -->
+              <div class="cv-actions">
+                <button
+                  pButton
+                  label="Analyse IA"
+                  icon="fa fa-chart-line"
+                  [text]="true"
+                  severity="primary"
+                  pTooltip="Voir l'analyse IA complète"
+                  tooltipPosition="top"
+                  (click)="openDetail(c)">
+                </button>
+                <button
+                  pButton
+                  icon="fa fa-file-arrow-down"
+                  [text]="true"
+                  [rounded]="true"
+                  severity="secondary"
+                  pTooltip="Ouvrir le CV"
+                  tooltipPosition="top"
+                  (click)="openCv(c)">
+                </button>
+                @if (isDrhOrAdmin) {
+                  <button
+                    pButton
+                    icon="fa fa-trash"
+                    [text]="true"
+                    [rounded]="true"
+                    severity="danger"
+                    pTooltip="Supprimer"
+                    tooltipPosition="top"
+                    (click)="confirmSupprimer(c)">
+                  </button>
+                }
+              </div>
+
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+
+      <!-- ── Empty state ── -->
+      <div class="empty-state">
+        <div class="empty-icon">
+          <i class="fa fa-users"></i>
+        </div>
+        <h3 class="mt-3 mb-1">Aucune candidature trouvée</h3>
+        <p class="text-color-secondary text-sm mb-3">
+          @if (hasActiveFilters) {
+            Modifiez vos critères pour afficher des résultats.
+          } @else {
+            Aucun CV n'a encore été soumis pour ce projet.
+          }
+        </p>
+        @if (hasActiveFilters) {
+          <button
+            pButton
+            label="Effacer les filtres"
+            icon="fa fa-filter-circle-xmark"
+            severity="secondary"
+            (click)="onClearFilters()">
+          </button>
+        } @else {
+          <button
+            pButton
+            label="Ajouter un CV"
+            icon="fa fa-plus"
+            severity="primary"
+            (click)="openUpload()">
+          </button>
+        }
+      </div>
+
+    }
+
+  }
+
+  <!-- ── Paginator ── -->
+  @if (totalRecords > PAGE_SIZE) {
+    <div class="paginator-card mt-0">
+      <p-paginator
+        [totalRecords]="totalRecords"
+        [rows]="PAGE_SIZE"
+        [first]="currentPage * PAGE_SIZE"
+        [rowsPerPageOptions]="[12, 24, 48]"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="{first}–{last} sur {totalRecords}"
+        (onPageChange)="onPageChange($event)">
+      </p-paginator>
+    </div>
+  }
+
+</div>

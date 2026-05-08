@@ -1,0 +1,333 @@
+<p-confirmDialog [style]="{ width: '36rem' }"></p-confirmDialog>
+
+<!-- ══ Loading ══ -->
+@if (loading) {
+  <div class="flex justify-content-center align-items-center" style="min-height:60vh">
+    <i class="fa fa-circle-notch fa-spin text-primary" style="font-size:2.5rem"></i>
+  </div>
+}
+
+@if (!loading && candidature) {
+  <div class="fadein animation-duration-400">
+
+    <!-- ══ Breadcrumb ══ -->
+    <nav class="breadcrumb">
+      <a (click)="goBack()" style="cursor:pointer">
+        <i class="fa fa-users mr-1 text-xs"></i>Candidatures
+      </a>
+      <span class="sep"><i class="fa fa-chevron-right"></i></span>
+      <span class="current">{{ candidature.nomCandidat || candidature.nomFichier }}</span>
+    </nav>
+
+    <!-- ══ Page Hero ══ -->
+    <div class="cd-hero">
+      <div class="cd-hero-left">
+        <div class="cd-avatar">
+          <i class="fa fa-user-tie"></i>
+        </div>
+        <div>
+          <h1 class="cd-name">{{ candidature.nomCandidat || '—' }}</h1>
+          <p class="cd-poste">{{ candidature.nomPoste }}</p>
+          <div class="cd-hero-badges">
+            <div class="cd-badge-group">
+              <span class="cd-badge-label">Statut :</span>
+              <span class="cv-status-pill" [ngClass]="'cv-status--' + candidature.statut.toLowerCase()">
+                @switch (candidature.statut) {
+                  @case (StatutCandidature.RECU)     { <i class="fa fa-inbox"></i> }
+                  @case (StatutCandidature.EN_COURS) { <i class="fa fa-circle-notch fa-spin"></i> }
+                  @case (StatutCandidature.EVALUE)   { <i class="fa fa-circle-check"></i> }
+                  @case (StatutCandidature.ERREUR)   { <i class="fa fa-triangle-exclamation"></i> }
+                  @case (StatutCandidature.RETENU)   { <i class="fa fa-check-double"></i> }
+                  @case (StatutCandidature.REJETE)   { <i class="fa fa-ban"></i> }
+                }
+                {{ statutCandidatureLabel(candidature.statut) }}
+              </span>
+            </div>
+            @if (candidature.recommandation) {
+              <div class="cd-badge-group">
+                <span class="cd-badge-label">Recommandation IA :</span>
+                <p-tag
+                  [value]="recommandationLabel(candidature.recommandation)"
+                  [severity]="recommandationSeverity(candidature.recommandation)"
+                  [rounded]="true">
+                </p-tag>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Action bar -->
+      <div class="cd-hero-actions">
+        <button
+          pButton
+          label="Retour"
+          icon="fa fa-arrow-left"
+          severity="secondary"
+          [outlined]="true"
+          (click)="goBack()">
+        </button>
+        <button
+          pButton
+          label="CV"
+          icon="fa fa-file-arrow-down"
+          severity="secondary"
+          [outlined]="true"
+          (click)="ouvrirCv()">
+        </button>
+        @if (canReevaluer) {
+          <button
+            pButton
+            label="Ré-évaluer"
+            icon="fa fa-rotate"
+            severity="info"
+            [outlined]="true"
+            [loading]="actionLoading"
+            (click)="reevaluer()">
+          </button>
+        }
+        @if (canDecide) {
+          <button
+            pButton
+            label="Retenir"
+            icon="fa fa-check-double"
+            severity="success"
+            [loading]="actionLoading"
+            (click)="retenir()">
+          </button>
+          <button
+            pButton
+            label="Rejeter"
+            icon="fa fa-ban"
+            severity="danger"
+            [outlined]="true"
+            [loading]="actionLoading"
+            (click)="rejeter()">
+          </button>
+        }
+        @if (isDrhOrAdmin) {
+          <button
+            pButton
+            icon="fa fa-trash"
+            severity="danger"
+            [text]="true"
+            [rounded]="true"
+            pTooltip="Supprimer"
+            (click)="confirmSupprimer()">
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- ══ Pipeline notice ══ -->
+    @if (isPipelineRunning(candidature.statut)) {
+      <div class="cd-pipeline-banner">
+        <i class="fa fa-circle-notch fa-spin"></i>
+        <span>Analyse IA en cours — rafraîchissez pour voir le résultat.</span>
+        <button
+          pButton
+          label="Rafraîchir"
+          icon="fa fa-rotate"
+          severity="info"
+          [outlined]="true"
+          (click)="refresh()"
+          style="margin-left:auto">
+        </button>
+      </div>
+    }
+
+    <!-- ══ MAIN GRID ══ -->
+    <div class="cd-grid">
+
+      <!-- ── Col gauche : infos candidat ── -->
+      <div class="cd-col-info">
+
+        <div class="cd-card">
+          <h3 class="cd-card-title"><i class="fa fa-address-card"></i> Coordonnées</h3>
+          <div class="cv-info">
+            @if (candidature.emailCandidat) {
+              <div class="cv-row">
+                <span class="cv-lbl"><i class="fa fa-envelope"></i>Email</span>
+                <span class="cv-val">{{ candidature.emailCandidat }}</span>
+              </div>
+            }
+            @if (candidature.telephoneCandidat) {
+              <div class="cv-row">
+                <span class="cv-lbl"><i class="fa fa-phone"></i>Téléphone</span>
+                <span class="cv-val">{{ candidature.telephoneCandidat }}</span>
+              </div>
+            }
+            <div class="cv-row">
+              <span class="cv-lbl"><i class="fa fa-file"></i>Fichier</span>
+              <span class="cv-val cd-ellipsis" [pTooltip]="candidature.nomFichier">
+                {{ candidature.nomFichier }}
+              </span>
+            </div>
+            <div class="cv-row">
+              <span class="cv-lbl"><i class="fa fa-calendar-plus"></i>Déposé le</span>
+              <span class="cv-val">{{ formatDate(candidature.deposeLe) }}</span>
+            </div>
+            @if (candidature.evalueLe) {
+              <div class="cv-row">
+                <span class="cv-lbl"><i class="fa fa-robot"></i>Évalué le</span>
+                <span class="cv-val">{{ formatDate(candidature.evalueLe) }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Col droite : score IA ── -->
+      <div class="cd-col-score">
+
+        @if (candidature.scoreMatching != null) {
+          <div class="cd-score-card" [ngClass]="'cd-score-card--' + scoreSeverity(candidature.scoreMatching)">
+
+            <!-- Jauge SVG circulaire -->
+            <div class="cd-gauge-wrap">
+              <svg viewBox="0 0 120 120" class="cd-gauge-svg" aria-hidden="true">
+                <!-- Fond de la jauge -->
+                <path
+                  [attr.d]="gaugeTrackArc()"
+                  class="cd-gauge-track"
+                  fill="none"
+                  stroke-width="10"
+                  stroke-linecap="round"/>
+                <!-- Arc coloré -->
+                <path
+                  [attr.d]="gaugeArc(candidature.scoreMatching)"
+                  class="cd-gauge-fill"
+                  [ngClass]="'cd-gauge-fill--' + scoreSeverity(candidature.scoreMatching)"
+                  fill="none"
+                  stroke-width="10"
+                  stroke-linecap="round"/>
+              </svg>
+              <!-- Score au centre -->
+              <div class="cd-gauge-center">
+                <span class="cd-gauge-score">{{ candidature.scoreMatching }}</span>
+                <span class="cd-gauge-max">/100</span>
+              </div>
+            </div>
+
+            <p class="cd-score-label">Score de correspondance IA</p>
+
+            @if (candidature.recommandation) {
+              <div class="mt-3">
+                <p-tag
+                  [value]="recommandationLabel(candidature.recommandation)"
+                  [severity]="recommandationSeverity(candidature.recommandation)"
+                  [rounded]="true"
+                  styleClass="cd-recommandation-tag">
+                </p-tag>
+              </div>
+            }
+
+          </div>
+        }
+
+        <!-- Erreur IA -->
+        @if (candidature.statut === StatutCandidature.ERREUR) {
+          <div class="cd-error-card">
+            <i class="fa fa-triangle-exclamation cd-error-icon"></i>
+            <p class="cd-error-title">Erreur d'analyse IA</p>
+            <p class="cd-error-msg">{{ candidature.justificationIa || 'Le pipeline IA a rencontré une erreur.' }}</p>
+          </div>
+        }
+
+      </div>
+
+    </div>
+
+    <!-- ══ Points forts / manquants ══ -->
+    @if (candidature.pointsForts.length || candidature.pointsManquants.length) {
+      <div class="cd-points-grid">
+
+        @if (candidature.pointsForts.length) {
+          <div class="cd-points-card cd-points-card--success">
+            <h3 class="cd-points-title">
+              <span class="cd-points-icon cd-points-icon--success">
+                <i class="fa fa-circle-check"></i>
+              </span>
+              Points forts
+              <span class="cd-points-count">{{ candidature.pointsForts.length }}</span>
+            </h3>
+            <ul class="cd-points-list">
+              @for (pt of candidature.pointsForts; track pt) {
+                <li class="cd-point">
+                  <i class="fa fa-check cd-point-bullet cd-point-bullet--success"></i>
+                  <span>{{ pt }}</span>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+
+        @if (candidature.pointsManquants.length) {
+          <div class="cd-points-card cd-points-card--danger">
+            <h3 class="cd-points-title">
+              <span class="cd-points-icon cd-points-icon--danger">
+                <i class="fa fa-circle-xmark"></i>
+              </span>
+              Points manquants
+              <span class="cd-points-count">{{ candidature.pointsManquants.length }}</span>
+            </h3>
+            <ul class="cd-points-list">
+              @for (pt of candidature.pointsManquants; track pt) {
+                <li class="cd-point">
+                  <i class="fa fa-xmark cd-point-bullet cd-point-bullet--danger"></i>
+                  <span>{{ pt }}</span>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+
+      </div>
+    }
+
+    <!-- ══ Justification IA ══ -->
+    @if (candidature.justificationIa && candidature.statut !== StatutCandidature.ERREUR) {
+      <div class="cd-justification-card">
+        <div class="cd-justification-header">
+          <div class="cd-ia-badge">
+            <i class="fa fa-robot"></i>
+          </div>
+          <div>
+            <h3 class="cd-justification-title">Analyse IA — Justification</h3>
+            <p class="cd-justification-sub">Évaluation générée automatiquement par intelligence artificielle</p>
+          </div>
+        </div>
+        <blockquote class="cd-justification-body">
+          {{ candidature.justificationIa }}
+        </blockquote>
+      </div>
+    }
+
+    <!-- ══ Questions d'entretien IA ══ -->
+    @if (candidature.questionsEntretien?.length) {
+      <div class="cd-questions-card">
+        <div class="cd-questions-header">
+          <div class="cd-questions-icon">
+            <i class="fa fa-comments"></i>
+          </div>
+          <div>
+            <h3 class="cd-questions-title">Questions d'entretien suggérées</h3>
+            <p class="cd-questions-sub">
+              {{ candidature.questionsEntretien.length }} question{{ candidature.questionsEntretien.length > 1 ? 's' : '' }} générée{{ candidature.questionsEntretien.length > 1 ? 's' : '' }} par l'IA pour approfondir le profil
+            </p>
+          </div>
+        </div>
+        <ol class="cd-questions-list">
+          @for (q of candidature.questionsEntretien; track q; let i = $index) {
+            <li class="cd-question-item">
+              <span class="cd-question-num">{{ i + 1 }}</span>
+              <span class="cd-question-text">{{ q }}</span>
+            </li>
+          }
+        </ol>
+      </div>
+    }
+
+  </div>
+}
