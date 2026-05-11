@@ -149,6 +149,11 @@
                     <span class="bs-lbl"><i class="fa fa-user-pen"></i>Créé par</span>
                     <span class="bs-val">{{ besoin.createdByNom }}</span>
                   </div>
+
+                  <div class="bs-row">
+                    <span class="bs-lbl"><i class="fa fa-location-dot"></i>Lieu</span>
+                    <span class="bs-val">{{ besoin.lieuAffectation }}</span>
+                  </div>
                   <div class="bs-row">
                     <span class="bs-lbl"><i class="fa fa-users"></i>Postes</span>
                     <span class="bs-val">{{ besoin.nombrePostes }}</span>
@@ -300,6 +305,15 @@
         </span>
       </div>
 
+
+
+      <div class="detail-section">
+        <span class="detail-label">Lieu d'affectation</span>
+        <span class="detail-value">
+          <i class="fa fa-location-dot mr-1 text-primary"></i>{{ b.lieuAffectation }}
+        </span>
+      </div>
+
       <div class="detail-section">
         <span class="detail-label">Nombre de postes</span>
         <span class="detail-value">
@@ -321,6 +335,11 @@
             [rounded]="true">
           </p-tag>
         </span>
+      </div>
+
+      <div class="detail-section" style="grid-column: 1 / -1">
+        <span class="detail-label">Motif du besoin</span>
+        <span class="detail-value" style="white-space: pre-wrap">{{ b.motif }}</span>
       </div>
 
     </div>

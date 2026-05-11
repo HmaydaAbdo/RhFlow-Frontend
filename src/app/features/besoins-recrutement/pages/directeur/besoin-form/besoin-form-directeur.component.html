@@ -80,6 +80,56 @@
         </div>
       </div>
 
+      <!-- Section: Contexte du besoin -->
+      <div class="form-card">
+        <div class="section-label"><i class="fa fa-circle-info"></i> Contexte du besoin</div>
+
+        <div class="grid">
+
+          <!-- Lieu d'affectation -->
+          <div class="col-12 md:col-6">
+            <div class="field">
+              <label class="field-label" for="lieuAffectation">
+                Lieu d'affectation <span class="req">*</span>
+              </label>
+              <input
+                id="lieuAffectation"
+                pInputText
+                formControlName="lieuAffectation"
+                placeholder="Ex : Siège social — Casablanca"
+                class="w-full"
+                [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('lieuAffectation')}" />
+              @if (isFieldInvalid('lieuAffectation')) {
+                <small class="p-error block mt-1">Le lieu d'affectation est obligatoire.</small>
+              }
+            </div>
+          </div>
+
+          <!-- Motif -->
+          <div class="col-12">
+            <div class="field">
+              <label class="field-label" for="motif">
+                Motif du besoin <span class="req">*</span>
+              </label>
+              <textarea
+                id="motif"
+                pInputTextarea
+                formControlName="motif"
+                rows="4"
+                placeholder="Décrivez la raison de ce besoin en recrutement (départ, accroissement d'activité, nouveau projet…)"
+                class="w-full"
+                [autoResize]="true"
+                [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('motif')}">
+              </textarea>
+              @if (isFieldInvalid('motif')) {
+                <small class="p-error block mt-1">Le motif est obligatoire.</small>
+              }
+            </div>
+          </div>
+
+        </div>
+      </div>
+
       <!-- Section: Détails -->
       <div class="form-card">
         <div class="section-label"><i class="fa fa-sliders"></i> Détails de la demande</div>

@@ -63,6 +63,8 @@ export interface BesoinRecrutementResponse {
   /** Utilisateur authentifié qui a exprimé le besoin */
   createdById: number;
   createdByNom: string;
+  lieuAffectation: string;
+  motif: string;
   nombrePostes: number;
   dateSouhaitee: string;
   priorite: PrioriteBesoin;
@@ -81,6 +83,8 @@ export interface BesoinRecrutementSummaryResponse {
   directeurNom: string;
   /** Utilisateur authentifié qui a exprimé le besoin */
   createdByNom: string;
+  lieuAffectation: string;
+  motif: string;
   nombrePostes: number;
   dateSouhaitee: string;
   priorite: PrioriteBesoin;
@@ -95,6 +99,8 @@ export interface BesoinRecrutementSummaryResponse {
 
 export interface BesoinRecrutementRequest {
   ficheDePosteId: number;
+  lieuAffectation: string;
+  motif: string;
   nombrePostes: number;
   dateSouhaitee: string;        // ISO date string yyyy-MM-dd
   priorite: PrioriteBesoin;

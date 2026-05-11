@@ -12,6 +12,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputTextareaModule } from 'primeng/inputtextarea';
 import { DropdownModule } from 'primeng/dropdown';
 import { CalendarModule } from 'primeng/calendar';
 import { DividerModule } from 'primeng/divider';
@@ -26,7 +28,7 @@ import { FichePosteSummaryResponse } from '../../../../fiches-poste/models/fiche
 import { NotificationService } from '../../../../../core/services/NotificationService';
 import { TokenService } from '../../../../../core/services/TokenService';
 import { RoleName } from '../../../../roles/models/role-name.enum';
-import {NgClass} from "@angular/common";
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-besoin-form-directeur',
@@ -37,6 +39,8 @@ import {NgClass} from "@angular/common";
     RouterLink,
     ButtonModule,
     InputNumberModule,
+    InputTextModule,
+    InputTextareaModule,
     DropdownModule,
     CalendarModule,
     DividerModule,
@@ -63,10 +67,12 @@ export class BesoinFormDirecteurComponent implements OnInit {
 
   // ── Form ─────────────────────────────────────────────────────────────────
   form = this.fb.group({
-    ficheDePosteId: [null as number | null, Validators.required],
-    nombrePostes:   [null as number | null, [Validators.required, Validators.min(1), Validators.max(999)]],
-    dateSouhaitee:  [null as Date | null, Validators.required],
-    priorite:       [null as PrioriteBesoin | null, Validators.required]
+    ficheDePosteId:  [null as number | null, Validators.required],
+    lieuAffectation: ['', [Validators.required, Validators.maxLength(200)]],
+    motif:           ['', [Validators.required, Validators.maxLength(2000)]],
+    nombrePostes:    [null as number | null, [Validators.required, Validators.min(1), Validators.max(999)]],
+    dateSouhaitee:   [null as Date | null, Validators.required],
+    priorite:        [null as PrioriteBesoin | null, Validators.required]
   });
 
   // ── Options ───────────────────────────────────────────────────────────────
@@ -123,10 +129,12 @@ export class BesoinFormDirecteurComponent implements OnInit {
       next: ({ besoin, fiches }) => {
         this.ficheOptions = fiches;
         this.form.patchValue({
-          ficheDePosteId: besoin.ficheDePosteId,
-          nombrePostes:   besoin.nombrePostes,
-          dateSouhaitee:  new Date(besoin.dateSouhaitee),
-          priorite:       besoin.priorite
+          ficheDePosteId:  besoin.ficheDePosteId,
+          lieuAffectation: besoin.lieuAffectation,
+          motif:           besoin.motif,
+          nombrePostes:    besoin.nombrePostes,
+          dateSouhaitee:   new Date(besoin.dateSouhaitee),
+          priorite:        besoin.priorite
         });
         this.loadingData = false;
         this.cdr.markForCheck();
@@ -155,10 +163,12 @@ export class BesoinFormDirecteurComponent implements OnInit {
 
     const v = this.form.value;
     const request = {
-      ficheDePosteId: v.ficheDePosteId!,
-      nombrePostes:   v.nombrePostes!,
-      dateSouhaitee:  this.toIsoDate(v.dateSouhaitee as Date),
-      priorite:       v.priorite as PrioriteBesoin
+      ficheDePosteId:  v.ficheDePosteId!,
+      lieuAffectation: v.lieuAffectation!,
+      motif:           v.motif!,
+      nombrePostes:    v.nombrePostes!,
+      dateSouhaitee:   this.toIsoDate(v.dateSouhaitee as Date),
+      priorite:        v.priorite as PrioriteBesoin
     };
 
     const call$ = this.isEdit

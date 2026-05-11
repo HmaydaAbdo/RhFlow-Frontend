@@ -168,6 +168,10 @@
                     </div>
                   }
                   <div class="bs-row">
+                    <span class="bs-lbl"><i class="fa fa-location-dot"></i>Lieu</span>
+                    <span class="bs-val">{{ besoin.lieuAffectation }}</span>
+                  </div>
+                  <div class="bs-row">
                     <span class="bs-lbl"><i class="fa fa-users"></i>Postes</span>
                     <span class="bs-val">{{ besoin.nombrePostes }}</span>
                   </div>
@@ -178,6 +182,11 @@
                   <div class="bs-row">
                     <span class="bs-lbl"><i class="fa fa-clock-rotate-left"></i>Soumis le</span>
                     <span class="bs-val">{{ formatDate(besoin.createdAt) }}</span>
+                  </div>
+                  <div class="bs-row" style="align-items: flex-start">
+                    <span class="bs-lbl"><i class="fa fa-comment-dots"></i>Motif</span>
+                    <span class="bs-val" style="overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical"
+                          [pTooltip]="besoin.motif" tooltipPosition="top">{{ besoin.motif }}</span>
                   </div>
                 </div>
 
