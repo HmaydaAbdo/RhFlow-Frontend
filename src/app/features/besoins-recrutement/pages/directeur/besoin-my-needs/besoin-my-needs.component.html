@@ -140,9 +140,19 @@
 
               </div>
 
-              <!-- Actions footer — visible uniquement si le besoin est en attente -->
-              @if (besoin.encours) {
-                <div class="bs-actions">
+              <!-- Actions footer ── Détail toujours visible, Modifier si encours -->
+              <div class="bs-actions">
+                <button
+                  pButton
+                  icon="fa fa-eye"
+                  severity="secondary"
+                  [rounded]="true"
+                  [text]="true"
+                  pTooltip="Voir le détail"
+                  tooltipPosition="top"
+                  (click)="goToDetail(besoin)">
+                </button>
+                @if (besoin.encours) {
                   <button
                     pButton
                     icon="fa fa-pen"
@@ -153,8 +163,8 @@
                     tooltipPosition="top"
                     (click)="goToEdit(besoin)">
                   </button>
-                </div>
-              }
+                }
+              </div>
 
             </div>
           </div>

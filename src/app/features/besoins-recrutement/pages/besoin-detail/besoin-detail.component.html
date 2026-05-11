@@ -1,0 +1,270 @@
+<div class="fadein animation-duration-400">
+
+  <!-- ── Breadcrumb ── -->
+  <div class="breadcrumb mb-4">
+    <a routerLink="/besoins-recrutement"><i class="fa fa-bullhorn mr-1"></i>Besoins en recrutement</a>
+    <i class="fa fa-chevron-right sep"></i>
+    <span class="current">Détail du besoin</span>
+  </div>
+
+  <!-- ── Loading ── -->
+  @if (loading) {
+    <div class="flex justify-content-center align-items-center py-8">
+      <i class="fa fa-circle-notch fa-spin text-primary" style="font-size: 2rem"></i>
+    </div>
+  }
+
+  @if (!loading && besoin) {
+
+    <!-- ── Page Header ── -->
+    <div class="page-hero mb-4">
+      <div class="flex align-items-center gap-3">
+        <div class="hero-icon">
+          <i class="fa fa-file-contract"></i>
+        </div>
+        <div>
+          <h2 class="hero-title">{{ besoin.ficheDePoste.intitulePoste }}</h2>
+          <p class="hero-sub">{{ besoin.directionNom }} · Soumis le {{ formatDate(besoin.createdAt) }}</p>
+        </div>
+      </div>
+      <div class="flex align-items-center gap-2 flex-wrap">
+        <p-tag
+          [value]="statutLabel(besoin.statut)"
+          [severity]="statutSeverity(besoin.encours, besoin.statut)"
+          [rounded]="true">
+        </p-tag>
+        <p-tag
+          [value]="prioriteLabel(besoin.priorite)"
+          [severity]="prioriteSeverity(besoin.priorite)"
+          [rounded]="true">
+        </p-tag>
+      </div>
+    </div>
+
+    <!-- ── Two-column layout ── -->
+    <div class="grid">
+
+      <!-- ═══════════════════════════════════════
+           LEFT — Informations du besoin
+      ════════════════════════════════════════ -->
+      <div class="col-12 lg:col-5">
+        <div class="form-card h-full">
+          <div class="section-label"><i class="fa fa-bullhorn"></i> Informations du besoin</div>
+
+          <div class="detail-grid">
+
+            <div class="detail-section">
+              <span class="detail-label">Créé par</span>
+              <span class="detail-value">
+                <i class="fa fa-user-pen mr-1 text-primary"></i>{{ besoin.createdByNom }}
+              </span>
+            </div>
+
+            <div class="detail-section">
+              <span class="detail-label">Directeur</span>
+              <span class="detail-value">
+                <i class="fa fa-user-tie mr-1 text-primary"></i>{{ besoin.directeurNom }}
+              </span>
+            </div>
+
+            <div class="detail-section">
+              <span class="detail-label">Lieu d'affectation</span>
+              <span class="detail-value">
+                <i class="fa fa-location-dot mr-1 text-primary"></i>{{ besoin.lieuAffectation }}
+              </span>
+            </div>
+
+            <div class="detail-section">
+              <span class="detail-label">Nombre de postes</span>
+              <span class="detail-value">
+                <span class="postes-badge"><i class="fa fa-users"></i>{{ besoin.nombrePostes }}</span>
+              </span>
+            </div>
+
+            <div class="detail-section">
+              <span class="detail-label">Date souhaitée</span>
+              <span class="detail-value">
+                <i class="fa fa-calendar-check mr-1 text-primary"></i>{{ formatDate(besoin.dateSouhaitee) }}
+              </span>
+            </div>
+
+            <div class="detail-section">
+              <span class="detail-label">Priorité</span>
+              <span class="detail-value">
+                <p-tag
+                  [value]="prioriteLabel(besoin.priorite)"
+                  [severity]="prioriteSeverity(besoin.priorite)"
+                  [rounded]="true">
+                </p-tag>
+              </span>
+            </div>
+
+            <div class="detail-section" style="grid-column: 1 / -1">
+              <span class="detail-label">Motif du besoin</span>
+              <span class="detail-value" style="white-space: pre-wrap">{{ besoin.motif }}</span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════
+           RIGHT — Fiche de poste
+      ════════════════════════════════════════ -->
+      <div class="col-12 lg:col-7">
+        <div class="form-card h-full">
+          <div class="section-label"><i class="fa fa-file-lines"></i> Fiche de poste</div>
+
+          <div class="detail-grid">
+
+            <div class="detail-section">
+              <span class="detail-label">Intitulé du poste</span>
+              <span class="detail-value font-semibold">{{ besoin.ficheDePoste.intitulePoste }}</span>
+            </div>
+
+            <div class="detail-section">
+              <span class="detail-label">Direction</span>
+              <span class="detail-value">
+                <i class="fa fa-building mr-1 text-primary"></i>{{ besoin.directionNom }}
+              </span>
+            </div>
+
+            <div class="detail-section">
+              <span class="detail-label">Niveau d'études requis</span>
+              <span class="detail-value">{{ niveauEtudesLabel(besoin.ficheDePoste.niveauEtudes) }}</span>
+            </div>
+
+            <div class="detail-section">
+              <span class="detail-label">Domaine de formation</span>
+              <span class="detail-value">{{ besoin.ficheDePoste.domaineFormation }}</span>
+            </div>
+
+            <div class="detail-section">
+              <span class="detail-label">Années d'expérience</span>
+              <span class="detail-value">
+                {{ besoin.ficheDePoste.anneesExperience === 0
+                    ? 'Débutant accepté'
+                    : besoin.ficheDePoste.anneesExperience + ' an(s) minimum' }}
+              </span>
+            </div>
+
+            <div class="detail-section" style="grid-column: 1 / -1">
+              <span class="detail-label">Mission principale</span>
+              <span class="detail-value" style="white-space: pre-wrap">{{ besoin.ficheDePoste.missionPrincipale }}</span>
+            </div>
+
+            <div class="detail-section" style="grid-column: 1 / -1">
+              <span class="detail-label">Activités principales</span>
+              <span class="detail-value" style="white-space: pre-wrap">{{ besoin.ficheDePoste.activitesPrincipales }}</span>
+            </div>
+
+            <div class="detail-section" style="grid-column: 1 / -1">
+              <span class="detail-label">Compétences techniques</span>
+              <span class="detail-value" style="white-space: pre-wrap">{{ besoin.ficheDePoste.competencesTechniques }}</span>
+            </div>
+
+            <div class="detail-section" style="grid-column: 1 / -1">
+              <span class="detail-label">Compétences managériales</span>
+              <span class="detail-value" style="white-space: pre-wrap">{{ besoin.ficheDePoste.competencesManageriales }}</span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Action Bar ── -->
+    <div class="action-bar mt-4">
+      <button
+        pButton
+        icon="fa fa-arrow-left"
+        label="Retour"
+        severity="secondary"
+        (click)="goBack()">
+      </button>
+
+      @if (besoin.encours) {
+        <button
+          pButton
+          icon="fa fa-pen"
+          label="Modifier"
+          severity="info"
+          (click)="goToEdit()">
+        </button>
+      }
+
+      @if (isDrhOrAdmin && besoin.encours) {
+        <button
+          pButton
+          icon="fa fa-circle-xmark"
+          label="Refuser"
+          severity="danger"
+          (click)="openDecision(StatutBesoin.REFUSE)">
+        </button>
+        <button
+          pButton
+          icon="fa fa-circle-check"
+          label="Accepter"
+          severity="success"
+          (click)="openDecision(StatutBesoin.ACCEPTE)">
+        </button>
+      }
+    </div>
+
+  }
+
+</div>
+
+<!-- ── Decision Dialog ── -->
+<p-dialog
+  [header]="pendingDecision === StatutBesoin.ACCEPTE ? 'Accepter ce besoin' : 'Refuser ce besoin'"
+  [(visible)]="showDecisionDialog"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{width: '32rem', maxWidth: '95vw'}"
+  (onHide)="closeDecision()">
+
+  @if (besoin) {
+    <div class="decision-target-info">
+      <div class="font-semibold text-sm">{{ besoin.ficheDePoste.intitulePoste }}</div>
+      <div class="text-xs text-color-secondary mt-1">
+        <i class="fa fa-building mr-1"></i>{{ besoin.directionNom }}
+        &nbsp;·&nbsp;
+        <i class="fa fa-users mr-1"></i>{{ besoin.nombrePostes }} poste(s)
+      </div>
+    </div>
+
+    <div class="decision-accept-msg mt-3">
+      @if (pendingDecision === StatutBesoin.ACCEPTE) {
+        <i class="fa fa-circle-check text-green-500 text-xl"></i>
+        <span>Vous allez <strong>accepter</strong> cette demande. Confirmez-vous ?</span>
+      } @else {
+        <i class="fa fa-circle-xmark text-red-500 text-xl"></i>
+        <span>Vous allez <strong>refuser</strong> cette demande. Confirmez-vous ?</span>
+      }
+    </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      label="Annuler"
+      icon="fa fa-times"
+      severity="secondary"
+      [disabled]="submittingDecision"
+      (click)="closeDecision()">
+    </button>
+    <button
+      pButton
+      [label]="pendingDecision === StatutBesoin.ACCEPTE ? 'Confirmer l\'acceptation' : 'Confirmer le refus'"
+      [icon]="submittingDecision ? 'fa fa-spinner fa-spin' : (pendingDecision === StatutBesoin.ACCEPTE ? 'fa fa-circle-check' : 'fa fa-circle-xmark')"
+      [severity]="pendingDecision === StatutBesoin.ACCEPTE ? 'success' : 'danger'"
+      [loading]="submittingDecision"
+      [disabled]="submittingDecision"
+      (click)="confirmDecision()">
+    </button>
+  </ng-template>
+
+</p-dialog>

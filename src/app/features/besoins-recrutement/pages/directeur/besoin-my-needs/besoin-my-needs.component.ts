@@ -131,6 +131,10 @@ export class BesoinMyNeedsComponent implements OnInit {
 
   goToCreate(): void { this.router.navigate(['/besoins-recrutement/new']); }
 
+  goToDetail(besoin: BesoinRecrutementSummaryResponse): void {
+    this.router.navigate(['/besoins-recrutement', besoin.id]);
+  }
+
   goToEdit(besoin: BesoinRecrutementSummaryResponse): void {
     this.router.navigate(['/besoins-recrutement', besoin.id, 'edit']);
   }

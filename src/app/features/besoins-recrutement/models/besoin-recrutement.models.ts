@@ -95,6 +95,64 @@ export interface BesoinRecrutementSummaryResponse {
   createdAt: string;
 }
 
+// ── Detail Response (page de détail) ──────────────────────────────────────
+
+export interface FicheDePosteDetail {
+  intitulePoste: string;
+  missionPrincipale: string;
+  activitesPrincipales: string;
+  niveauEtudes: NiveauEtudes;
+  domaineFormation: string;
+  anneesExperience: number;
+  competencesTechniques: string;
+  competencesManageriales: string;
+}
+
+export interface BesoinRecrutementDetailResponse {
+  id: number;
+  ficheDePosteId: number;
+  directionId: number;
+  directionNom: string;
+  directeurId: number;
+  directeurNom: string;
+  createdById: number;
+  createdByNom: string;
+  lieuAffectation: string;
+  motif: string;
+  nombrePostes: number;
+  dateSouhaitee: string;
+  priorite: PrioriteBesoin;
+  encours: boolean;
+  statut: StatutBesoin | null;
+  createdAt: string;
+  updatedAt: string;
+  ficheDePoste: FicheDePosteDetail;
+}
+
+// ── Niveau études ──────────────────────────────────────────────────────────
+
+export enum NiveauEtudes {
+  PAS_IMPORTANT = 'PAS_IMPORTANT',
+  NIVEAU_BAC    = 'NIVEAU_BAC',
+  BAC           = 'BAC',
+  BAC_PLUS_2    = 'BAC_PLUS_2',
+  BAC_PLUS_3    = 'BAC_PLUS_3',
+  BAC_PLUS_5    = 'BAC_PLUS_5',
+  DOCTORAT      = 'DOCTORAT'
+}
+
+export function niveauEtudesLabel(n: NiveauEtudes): string {
+  switch (n) {
+    case NiveauEtudes.PAS_IMPORTANT: return 'Pas important';
+    case NiveauEtudes.NIVEAU_BAC:    return 'Niveau Bac';
+    case NiveauEtudes.BAC:           return 'Bac';
+    case NiveauEtudes.BAC_PLUS_2:    return 'Bac+2';
+    case NiveauEtudes.BAC_PLUS_3:    return 'Bac+3';
+    case NiveauEtudes.BAC_PLUS_5:    return 'Bac+5';
+    case NiveauEtudes.DOCTORAT:      return 'Doctorat';
+  }
+}
+
 // ── Request DTOs ───────────────────────────────────────────────────────────
 
 export interface BesoinRecrutementRequest {

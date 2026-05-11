@@ -180,7 +180,7 @@
                   [text]="true"
                   pTooltip="Voir le détail"
                   tooltipPosition="top"
-                  (click)="openDetail(besoin)">
+                  (click)="goToDetail(besoin)">
                 </button>
                 <button
                   pButton
@@ -265,111 +265,7 @@
 
 </div>
 
-<!-- ════════════════════════════════════════════════
-     DETAIL DIALOG
-════════════════════════════════════════════════ -->
-<p-dialog
-  header="Détail du besoin"
-  [(visible)]="showDetailDialog"
-  [modal]="true"
-  [draggable]="false"
-  [resizable]="false"
-  styleClass="detail-dialog"
-  [style]="{width: '42rem', maxWidth: '95vw'}"
-  (onHide)="closeDetail()">
 
-  @if (detailBesoin; as b) {
-    <div class="detail-grid">
-
-      <div class="detail-section">
-        <span class="detail-label">Fiche de poste</span>
-        <span class="detail-value font-semibold">{{ b.ficheDePosteIntitule }}</span>
-      </div>
-
-      <div class="detail-section">
-        <span class="detail-label">Direction</span>
-        <span class="detail-value">
-          <i class="fa fa-building mr-1 text-primary"></i>{{ b.directionNom }}
-        </span>
-      </div>
-
-      <div class="detail-section">
-        <span class="detail-label">Directeur de direction</span>
-        <span class="detail-value">{{ b.directeurNom }}</span>
-      </div>
-
-      <div class="detail-section">
-        <span class="detail-label">Créé par</span>
-        <span class="detail-value">
-          <i class="fa fa-user-pen mr-1 text-primary"></i>{{ b.createdByNom }}
-        </span>
-      </div>
-
-
-
-      <div class="detail-section">
-        <span class="detail-label">Lieu d'affectation</span>
-        <span class="detail-value">
-          <i class="fa fa-location-dot mr-1 text-primary"></i>{{ b.lieuAffectation }}
-        </span>
-      </div>
-
-      <div class="detail-section">
-        <span class="detail-label">Nombre de postes</span>
-        <span class="detail-value">
-          <span class="postes-badge"><i class="fa fa-users"></i>{{ b.nombrePostes }}</span>
-        </span>
-      </div>
-
-      <div class="detail-section">
-        <span class="detail-label">Date souhaitée</span>
-        <span class="detail-value">{{ formatDate(b.dateSouhaitee) }}</span>
-      </div>
-
-      <div class="detail-section">
-        <span class="detail-label">Priorité</span>
-        <span class="detail-value">
-          <p-tag
-            [value]="prioriteLabel(b.priorite)"
-            [severity]="prioriteSeverity(b.priorite)"
-            [rounded]="true">
-          </p-tag>
-        </span>
-      </div>
-
-      <div class="detail-section" style="grid-column: 1 / -1">
-        <span class="detail-label">Motif du besoin</span>
-        <span class="detail-value" style="white-space: pre-wrap">{{ b.motif }}</span>
-      </div>
-
-    </div>
-  }
-
-  <ng-template pTemplate="footer">
-    <button
-      pButton
-      label="Fermer"
-      icon="fa fa-times"
-      severity="secondary"
-      (click)="closeDetail()">
-    </button>
-    <button
-      pButton
-      icon="fa fa-circle-check"
-      label="Accepter"
-      severity="success"
-      (click)="closeDetail(); openDecision(detailBesoin!, StatutBesoin.ACCEPTE)">
-    </button>
-    <button
-      pButton
-      icon="fa fa-circle-xmark"
-      label="Refuser"
-      severity="danger"
-      (click)="closeDetail(); openDecision(detailBesoin!, StatutBesoin.REFUSE)">
-    </button>
-  </ng-template>
-
-</p-dialog>
 
 <!-- ════════════════════════════════════════════════
      DECISION DIALOG

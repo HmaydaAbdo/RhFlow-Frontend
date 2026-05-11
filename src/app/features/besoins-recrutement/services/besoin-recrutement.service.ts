@@ -4,6 +4,7 @@ import { BehaviorSubject, Observable, finalize, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { PageResponse } from '../../../core/models/pagination.models';
 import {
+  BesoinRecrutementDetailResponse,
   BesoinRecrutementRequest,
   BesoinRecrutementResponse,
   BesoinRecrutementSearchDto,
@@ -52,8 +53,8 @@ export class BesoinRecrutementService {
       .subscribe();
   }
 
-  getById(id: number): Observable<BesoinRecrutementResponse> {
-    return this.http.get<BesoinRecrutementResponse>(`${this.baseUrl}/${id}`);
+  getById(id: number): Observable<BesoinRecrutementDetailResponse> {
+    return this.http.get<BesoinRecrutementDetailResponse>(`${this.baseUrl}/${id}`);
   }
 
   getStats(): Observable<BesoinStatsResponse> {

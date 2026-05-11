@@ -55,12 +55,11 @@ const DROPDOWN_SCROLL_SEL  = '.p-dropdown-items-wrapper';
     DropdownModule,
     TagModule,
     TooltipModule,
-    DialogModule,
-    DividerModule,
     PaginatorModule,
     ConfirmDialogModule,
     NgClass,
     TitleCasePipe,
+    DialogModule,
   ],
   providers: [],
   templateUrl: './besoin-list.component.html',
@@ -111,9 +110,6 @@ export class BesoinListComponent implements OnInit {
   pendingDecision:   DecisionStatut                   | null = null;
   submittingDecision = false;
 
-  // ── Detail dialog ────────────────────────────────────────────────────────
-  showDetailDialog = false;
-  detailBesoin:    BesoinRecrutementSummaryResponse | null = null;
 
   // ── Pure helpers exposés au template ────────────────────────────────────
   readonly statutLabel      = statutLabel;
@@ -275,17 +271,9 @@ export class BesoinListComponent implements OnInit {
       });
   }
 
-  // ── Detail dialog ────────────────────────────────────────────────────────
-  openDetail(besoin: BesoinRecrutementSummaryResponse): void {
-    this.detailBesoin     = besoin;
-    this.showDetailDialog = true;
-    this.cdr.markForCheck();
-  }
-
-  closeDetail(): void {
-    this.showDetailDialog = false;
-    this.detailBesoin     = null;
-    this.cdr.markForCheck();
+  // ── Detail navigation ────────────────────────────────────────────────────
+  goToDetail(besoin: BesoinRecrutementSummaryResponse): void {
+    this.router.navigate(['/besoins-recrutement', besoin.id]);
   }
 
   // ── Decision dialog ──────────────────────────────────────────────────────

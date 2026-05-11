@@ -39,6 +39,14 @@ export const BESOINS_RECRUTEMENT_ROUTES: Routes = [
         .then(c => c.BesoinFormDirecteurComponent),
   },
   {
+    path: ':id',
+    canActivate: [roleGuard],
+    data: { roles: [RoleName.ADMIN, RoleName.DRH, RoleName.DIRECTEUR] },
+    loadComponent: () =>
+      import('./pages/besoin-detail/besoin-detail.component')
+        .then(c => c.BesoinDetailComponent),
+  },
+  {
     path: ':id/edit',
     canActivate: [roleGuard],
     data: { roles: [RoleName.ADMIN, RoleName.DRH, RoleName.DIRECTEUR] },
