@@ -13,7 +13,6 @@ import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { DividerModule } from 'primeng/divider';
 import { DialogModule } from 'primeng/dialog';
-import { NgClass } from '@angular/common';
 import { BesoinRecrutementService } from '../../services/besoin-recrutement.service';
 
 import {
@@ -43,7 +42,6 @@ import {RoleName} from "../../../roles/models/role-name.enum";
     TooltipModule,
     DividerModule,
     DialogModule,
-    NgClass,
   ],
   templateUrl: './besoin-detail.component.html',
 })
