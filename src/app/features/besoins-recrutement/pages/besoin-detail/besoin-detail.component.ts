@@ -18,6 +18,7 @@ import { BesoinRecrutementService } from '../../services/besoin-recrutement.serv
 
 import {
   BesoinRecrutementDetailResponse,
+  DecisionBesoinRequest,
   DecisionStatut,
   StatutBesoin,
   PrioriteBesoin,
@@ -27,9 +28,8 @@ import {
   statutLabel,
   statutSeverity
 } from '../../models/besoin-recrutement.models';
-import { DecisionBesoinRequest } from '../../models/besoin-recrutement.models';
-import {NotificationService} from "../../../../core/services/NotificationService";
 import {TokenService} from "../../../../core/services/TokenService";
+import {NotificationService} from "../../../../core/services/NotificationService";
 import {RoleName} from "../../../roles/models/role-name.enum";
 
 @Component({
@@ -49,36 +49,35 @@ import {RoleName} from "../../../roles/models/role-name.enum";
 })
 export class BesoinDetailComponent implements OnInit {
 
-  private readonly route       = inject(ActivatedRoute);
-  private readonly router      = inject(Router);
-  private readonly service     = inject(BesoinRecrutementService);
-  private readonly notification= inject(NotificationService);
-  private readonly tokenService= inject(TokenService);
-  private readonly cdr         = inject(ChangeDetectorRef);
-  private readonly destroyRef  = inject(DestroyRef);
+  private readonly route        = inject(ActivatedRoute);
+  private readonly router       = inject(Router);
+  private readonly service      = inject(BesoinRecrutementService);
+  private readonly notification = inject(NotificationService);
+  private readonly tokenService = inject(TokenService);
+  private readonly cdr          = inject(ChangeDetectorRef);
+  private readonly destroyRef   = inject(DestroyRef);
 
-  // ── State ─────────────────────────────────────────────────────────────────
+  // State
   besoin: BesoinRecrutementDetailResponse | null = null;
-  loading  = true;
+  loading = true;
 
-  // ── Decision dialog ────────────────────────────────────────────────────
+  // Decision dialog
   showDecisionDialog  = false;
   pendingDecision: DecisionStatut | null = null;
   submittingDecision  = false;
 
-  // ── Role helpers ────────────────────────────────────────────────────────
+  // Role helpers
   readonly isDrhOrAdmin = this.tokenService.hasAnyRole([RoleName.ADMIN, RoleName.DRH]);
 
-  // ── Pure helpers exposés au template ───────────────────────────────────
-  readonly statutLabel      = statutLabel;
-  readonly prioriteLabel    = prioriteLabel;
-  readonly statutSeverity   = statutSeverity;
-  readonly prioriteSeverity = prioriteSeverity;
-  readonly niveauEtudesLabel= niveauEtudesLabel;
-  readonly StatutBesoin     = StatutBesoin;
-  readonly PrioriteBesoin   = PrioriteBesoin;
+  // Pure helpers
+  readonly statutLabel       = statutLabel;
+  readonly prioriteLabel     = prioriteLabel;
+  readonly statutSeverity    = statutSeverity;
+  readonly prioriteSeverity  = prioriteSeverity;
+  readonly niveauEtudesLabel = niveauEtudesLabel;
+  readonly StatutBesoin      = StatutBesoin;
+  readonly PrioriteBesoin    = PrioriteBesoin;
 
-  // ── Lifecycle ──────────────────────────────────────────────────────────
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.service.getById(id)
@@ -96,13 +95,12 @@ export class BesoinDetailComponent implements OnInit {
       });
   }
 
-  // ── Actions ────────────────────────────────────────────────────────────
   goToEdit(): void {
     this.router.navigate(['/besoins-recrutement', this.besoin!.id, 'edit']);
   }
 
   openDecision(decision: DecisionStatut): void {
-    this.pendingDecision   = decision;
+    this.pendingDecision    = decision;
     this.showDecisionDialog = true;
     this.cdr.markForCheck();
   }
@@ -115,7 +113,6 @@ export class BesoinDetailComponent implements OnInit {
 
   confirmDecision(): void {
     if (!this.besoin || !this.pendingDecision) return;
-
     this.submittingDecision = true;
     this.cdr.markForCheck();
 
@@ -125,11 +122,10 @@ export class BesoinDetailComponent implements OnInit {
       .subscribe({
         next: () => {
           this.notification.success(
-            this.pendingDecision === StatutBesoin.ACCEPTE ? 'Besoin accepté' : 'Besoin refusé'
+            this.pendingDecision === StatutBesoin.ACCEPTE ? 'Besoin accepte' : 'Besoin refuse'
           );
           this.submittingDecision = false;
           this.closeDecision();
-          // Recharger pour mettre à jour le statut affiché
           this.service.getById(this.besoin!.id)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(b => { this.besoin = b; this.cdr.markForCheck(); });
@@ -142,7 +138,6 @@ export class BesoinDetailComponent implements OnInit {
     this.router.navigate(['/besoins-recrutement']);
   }
 
-  // ── Helpers ────────────────────────────────────────────────────────────
   formatDate(iso: string): string {
     return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
   }

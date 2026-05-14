@@ -8,6 +8,7 @@ export interface UserResponse {
   gsm: string;
   enabled: boolean;
   roles: Array<string>;
+  hasSignature: boolean;
 }
 
 

@@ -52,6 +52,11 @@ export class DirectionService {
     return this.http.get<PageResponse<DirectionResponse>>(this.baseUrl, { params });
   }
 
+  /** Directions gérées par le directeur connecté (rôle DIRECTEUR). */
+  getMine(): Observable<DirectionResponse[]> {
+    return this.http.get<DirectionResponse[]>(`${this.baseUrl}/mine`);
+  }
+
   getById(id: number): Observable<DirectionResponse> {
     return this.http.get<DirectionResponse>(`${this.baseUrl}/${id}`);
   }

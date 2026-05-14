@@ -1,5 +1,30 @@
 <p-confirmDialog></p-confirmDialog>
 
+<!-- Dialog prévisualisation signature -->
+<p-dialog
+  [(visible)]="signaturePreviewVisible"
+  [header]="'Signature — ' + (signaturePreviewName ?? '')"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '420px' }"
+  (onHide)="closeSignaturePreview()">
+
+  <div class="flex align-items-center justify-content-center" style="min-height: 120px;">
+    @if (signaturePreviewLoading) {
+      <i class="fa fa-spinner fa-spin text-2xl text-color-secondary"></i>
+    } @else if (signaturePreviewUrl) {
+      <img [src]="signaturePreviewUrl" alt="Signature"
+           style="max-width: 100%; max-height: 200px; object-fit: contain; border: 1px solid var(--surface-border); border-radius: 6px; padding: 8px;"/>
+    }
+  </div>
+</p-dialog>
+
+<!-- Input file caché pour l'upload de signature -->
+<input #signatureInput type="file" accept="image/png,image/jpeg"
+       style="display:none" (change)="onSignatureFileSelected($event)"/>
+
 <div class="fadein animation-duration-400">
 
   <!-- Header -->
@@ -69,7 +94,8 @@
         <th style="width: 140px">GSM</th>
         <th>Rôles</th>
         <th style="width: 100px" class="text-center">Statut</th>
-        <th style="width: 160px" class="text-center">Actions</th>
+        <th style="width: 110px" class="text-center">Signature</th>
+        <th style="width: 120px" class="text-center">Actions</th>
       </tr>
     </ng-template>
 
@@ -99,7 +125,32 @@
                  [rounded]="true">
           </p-tag>
         </td>
-        <td class="text-center flex flex-row flex-nowrap">
+        <td class="text-center">
+          @if (signatureProcessingId === user.id) {
+            <i class="fa fa-spinner fa-spin text-color-secondary"></i>
+          } @else {
+            <div class="flex align-items-center justify-content-center gap-1">
+              <i [class]="user.hasSignature ? 'fa fa-signature text-green-500' : 'fa fa-signature text-color-secondary opacity-40'"
+                 [pTooltip]="user.hasSignature ? 'Signature enregistrée' : 'Aucune signature'"
+                 tooltipPosition="top"></i>
+              @if (user.hasSignature) {
+                <button pButton icon="fa fa-eye" severity="secondary" [rounded]="true" [text]="true"
+                        pTooltip="Visualiser la signature" tooltipPosition="top"
+                        (click)="openSignaturePreview(user)"></button>
+              }
+              <button pButton icon="fa fa-upload" severity="info" [rounded]="true" [text]="true"
+                      [pTooltip]="user.hasSignature ? 'Remplacer la signature' : 'Uploader une signature'"
+                      tooltipPosition="top"
+                      (click)="openSignatureUpload(user)"></button>
+              @if (user.hasSignature) {
+                <button pButton icon="fa fa-trash" severity="danger" [rounded]="true" [text]="true"
+                        pTooltip="Supprimer la signature" tooltipPosition="top"
+                        (click)="confirmDeleteSignature(user)"></button>
+              }
+            </div>
+          }
+        </td>
+        <td class="text-center flex flex-row flex-nowrap justify-content-center">
           <button pButton icon="fa fa-pen" severity="info" [rounded]="true" [text]="true"
                   pTooltip="Éditer" tooltipPosition="left"
                   [routerLink]="['/users', user.id]"></button>
@@ -115,7 +166,7 @@
 
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="7" class="text-center p-4 text-color-secondary">
+        <td colspan="8" class="text-center p-4 text-color-secondary">
           Aucun utilisateur trouvé
         </td>
       </tr>

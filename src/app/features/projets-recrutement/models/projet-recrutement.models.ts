@@ -68,3 +68,30 @@ export function statutProjetSeverity(s: StatutProjet): 'success' | 'secondary' {
     case StatutProjet.FERME:  return 'secondary';
   }
 }
+
+// ── PDF Export ─────────────────────────────────────────────────────────────
+
+export interface ProjetPdfContexteFields {
+  direction:       boolean;
+  directeur:       boolean;
+  lieuAffectation: boolean;
+  nombrePostes:    boolean;
+  dateSouhaitee:   boolean;
+  priorite:        boolean;
+  motif:           boolean;
+}
+
+export interface ProjetPdfFicheFields {
+  niveauEtudes:            boolean;
+  domaineFormation:        boolean;
+  anneesExperience:        boolean;
+  missionPrincipale:       boolean;
+  activitesPrincipales:    boolean;
+  competencesTechniques:   boolean;
+  competencesManageriales: boolean;
+}
+
+export interface ProjetPdfExportRequest {
+  contexte:     ProjetPdfContexteFields;
+  fiche:        ProjetPdfFicheFields;
+}

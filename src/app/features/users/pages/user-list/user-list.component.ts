@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, ElementRef, inject, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import {  debounceTime, distinctUntilChanged } from 'rxjs';
@@ -10,6 +10,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TagModule } from 'primeng/tag';
 import { DropdownModule } from 'primeng/dropdown';
+import { DialogModule } from 'primeng/dialog';
 import { ConfirmationService } from 'primeng/api';
 
 import { UserService } from '../../services/user.service';
@@ -38,16 +39,30 @@ interface EnabledOption {
     ConfirmDialogModule,
     TagModule,
     DropdownModule,
+    DialogModule,
   ],
   providers: [ConfirmationService],
   templateUrl: './user-list.component.html',
 })
-export class UserListComponent implements OnInit {
+export class UserListComponent implements OnInit, OnDestroy {
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly cdr        = inject(ChangeDetectorRef);
 
+  @ViewChild('signatureInput') signatureInput!: ElementRef<HTMLInputElement>;
+
   users: UserResponse[] = [];
+
+  /** Utilisateur ciblé pour l'upload de signature. */
+  signatureTargetUser: UserResponse | null = null;
+  /** ID de l'utilisateur dont la signature est en cours de traitement. */
+  signatureProcessingId: number | null = null;
+
+  /** Prévisualisation signature */
+  signaturePreviewVisible = false;
+  signaturePreviewUrl: string | null = null;
+  signaturePreviewName: string | null = null;
+  signaturePreviewLoading = false;
   totalRecords = 0;
   loading = false;
 
@@ -181,6 +196,113 @@ export class UserListComponent implements OnInit {
             this.loadUsers();
           },
         });
+      },
+    });
+  }
+
+  // ==========================================================================
+  //  SIGNATURE
+  // ==========================================================================
+
+  openSignaturePreview(user: UserResponse): void {
+    this.signaturePreviewName = user.fullName;
+    this.signaturePreviewLoading = true;
+    this.signaturePreviewVisible = true;
+    this.cdr.markForCheck();
+
+    this.userService.getSignatureBlob(user.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (blob) => {
+          if (this.signaturePreviewUrl) {
+            URL.revokeObjectURL(this.signaturePreviewUrl);
+          }
+          this.signaturePreviewUrl = URL.createObjectURL(blob);
+          this.signaturePreviewLoading = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.signaturePreviewVisible = false;
+          this.signaturePreviewLoading = false;
+          this.notification.error('Impossible de charger la signature');
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  closeSignaturePreview(): void {
+    this.signaturePreviewVisible = false;
+    if (this.signaturePreviewUrl) {
+      URL.revokeObjectURL(this.signaturePreviewUrl);
+      this.signaturePreviewUrl = null;
+    }
+    this.signaturePreviewName = null;
+    this.cdr.markForCheck();
+  }
+
+  ngOnDestroy(): void {
+    if (this.signaturePreviewUrl) {
+      URL.revokeObjectURL(this.signaturePreviewUrl);
+    }
+  }
+
+  openSignatureUpload(user: UserResponse): void {
+    this.signatureTargetUser = user;
+    this.signatureInput.nativeElement.value = '';
+    this.signatureInput.nativeElement.click();
+  }
+
+  onSignatureFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file  = input.files?.[0];
+    if (!file || !this.signatureTargetUser) return;
+
+    const userId = this.signatureTargetUser.id;
+    this.signatureProcessingId = userId;
+    this.cdr.markForCheck();
+
+    this.userService.uploadSignature(userId, file)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.notification.success('Signature enregistrée');
+          this.signatureProcessingId = null;
+          this.signatureTargetUser   = null;
+          this.loadUsers();
+        },
+        error: () => {
+          this.notification.error('Erreur lors de l\'upload de la signature');
+          this.signatureProcessingId = null;
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  confirmDeleteSignature(user: UserResponse): void {
+    this.confirmation.confirm({
+      message: `Supprimer la signature de <b>${user.fullName}</b> ?`,
+      header: 'Confirmation',
+      icon: 'fa fa-triangle-exclamation',
+      acceptLabel: 'Supprimer',
+      rejectLabel: 'Annuler',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.signatureProcessingId = user.id;
+        this.cdr.markForCheck();
+        this.userService.deleteSignature(user.id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.notification.success('Signature supprimée');
+              this.signatureProcessingId = null;
+              this.loadUsers();
+            },
+            error: () => {
+              this.notification.error('Erreur lors de la suppression');
+              this.signatureProcessingId = null;
+              this.cdr.markForCheck();
+            },
+          });
       },
     });
   }

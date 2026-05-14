@@ -16,7 +16,7 @@
       <span class="count-badge">
         <i class="fa fa-layer-group mr-1 text-xs"></i>{{ totalRecords }} fiche(s)
       </span>
-      @if (canAddOrEdit()) {
+      @if (canCreate()) {
         <button pButton icon="fa fa-plus" label="Nouvelle fiche" (click)="goToCreate()"></button>
       }
     </div>
@@ -159,7 +159,7 @@
                   (click)="goToEdit(fiche)">
                 </button>
 
-                @if (canAddOrEdit()) {
+                @if (canDelete()) {
                   <button
                     pButton
                     icon="fa fa-trash"

@@ -105,12 +105,13 @@ export class DirectionFormComponent implements OnInit {
           // Pre-load the selected director so dropdown shows the name immediately
           if (d.directeurId) {
             this.directors = [{
-              id:       d.directeurId,
-              fullName: d.directeurNom ?? '',
-              email:    '',
-              gsm:      '',
-              enabled:  true,
-              roles:    [],
+              id:           d.directeurId,
+              fullName:     d.directeurNom ?? '',
+              email:        '',
+              gsm:          '',
+              enabled:      true,
+              roles:        [],
+              hasSignature: false,
             }];
           }
           this.loadingData = false;

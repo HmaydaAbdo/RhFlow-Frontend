@@ -2632,3 +2632,46 @@ html.dark-theme {
 .cd-question-text {
   flex: 1;
 }
+
+// ── PDF Export dialog ────────────────────────────────────────────────────────
+.export-section {
+  border: 1px solid var(--surface-border);
+  border-radius: var(--border-radius);
+  padding: 0.75rem 1rem;
+}
+
+.export-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.export-section-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-color-secondary);
+
+  i { margin-right: 0.35rem; }
+}
+
+.export-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 1rem;
+}
+
+.export-field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--text-color);
+
+  &--full {
+    grid-column: 1 / -1;
+  }
+}

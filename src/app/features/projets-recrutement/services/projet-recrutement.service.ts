@@ -7,6 +7,7 @@ import {
   ProjetRecrutementResponse,
   ProjetRecrutementSearchDto,
   ProjetRecrutementSummaryResponse,
+  ProjetPdfExportRequest,
   UpdateObjetCandidatureRequest
 } from '../models/projet-recrutement.models';
 
@@ -59,5 +60,13 @@ export class ProjetRecrutementService {
 
   updateObjetCandidature(id: number, request: UpdateObjetCandidatureRequest): Observable<ProjetRecrutementResponse> {
     return this.http.patch<ProjetRecrutementResponse>(`${this.baseUrl}/${id}/objet-candidature`, request);
+  }
+
+  exportPdf(id: number, request: ProjetPdfExportRequest): Observable<Blob> {
+    return this.http.post(
+      `${this.baseUrl}/${id}/export-pdf`,
+      request,
+      { responseType: 'blob' }
+    );
   }
 }

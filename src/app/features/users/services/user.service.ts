@@ -89,4 +89,18 @@ export class UserService {
   removeRole(userId: number, roleId: number): Observable<UserResponse> {
     return this.http.delete<UserResponse>(`${this.baseUrl}/${userId}/roles/${roleId}`);
   }
+
+  getSignatureBlob(userId: number): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/${userId}/signature`, { responseType: 'blob' });
+  }
+
+  uploadSignature(userId: number, file: File): Observable<void> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<void>(`${this.baseUrl}/${userId}/signature`, formData);
+  }
+
+  deleteSignature(userId: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${userId}/signature`);
+  }
 }

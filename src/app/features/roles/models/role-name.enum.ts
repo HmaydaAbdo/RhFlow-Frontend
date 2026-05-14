@@ -10,9 +10,10 @@
  *   data: { roles: [RoleName.ADMIN, RoleName.DRH] }
  */
 export const RoleName = {
-  ADMIN: 'ADMIN',
-  DRH: 'DRH',
+  ADMIN:     'ADMIN',
+  DRH:       'DRH',
   DIRECTEUR: 'DIRECTEUR',
+  DG:        'DG',
 } as const;
 
 export type RoleName = typeof RoleName[keyof typeof RoleName];
@@ -24,7 +25,8 @@ export type RoleName = typeof RoleName[keyof typeof RoleName];
  * Aligné avec les descriptions seedées côté backend.
  */
 export const ROLE_NAME_LABELS: Record<RoleName, string> = {
-  [RoleName.ADMIN]: 'Administrateur',
-  [RoleName.DRH]: 'DRH',
+  [RoleName.ADMIN]:     'Administrateur',
+  [RoleName.DRH]:       'DRH',
   [RoleName.DIRECTEUR]: 'Directeur',
+  [RoleName.DG]:        'Directeur Général',
 };

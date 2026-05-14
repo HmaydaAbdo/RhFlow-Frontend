@@ -98,6 +98,12 @@ export class FichePosteFormComponent implements OnInit {
   private directionScrollBound: EventListener | null = null;
   private readonly directionFilter$ = new Subject<string>();
 
+  /** Vrai si l'utilisateur est DIRECTEUR sans DRH ni ADMIN. */
+  get isDirecteurOnly(): boolean {
+    return this.tokenService.hasRole(RoleName.DIRECTEUR)
+        && !this.tokenService.hasAnyRole([RoleName.DRH, RoleName.ADMIN]);
+  }
+
   // ── Lifecycle ────────────────────────────────────────────────────────────
   ngOnInit(): void {
     this.subscribeToDirectionFilter();
@@ -106,6 +112,11 @@ export class FichePosteFormComponent implements OnInit {
     if (idParam) {
       this.editId = +idParam;
       this.loadFormData(this.editId);
+    }
+
+    // Pour un DIRECTEUR uniquement : pré-charger sa direction et bloquer le champ
+    if (this.isDirecteurOnly) {
+      this.loadDirecteurOwnDirections();
     }
   }
 
@@ -151,6 +162,24 @@ export class FichePosteFormComponent implements OnInit {
         error: () => {
           this.notification.error('Fiche de poste introuvable');
           this.router.navigate(['/fiches-de-poste']);
+        },
+      });
+  }
+
+  // ── Direction DIRECTEUR — pré-chargement ────────────────────────────────
+  private loadDirecteurOwnDirections(): void {
+    this.directionService.getMine()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: dirs => {
+          this.directions = dirs.map(d => ({ id: d.id, nom: d.nom }));
+          // Pré-sélectionner automatiquement si une seule direction
+          if (dirs.length === 1) {
+            this.form.get('directionId')!.setValue(dirs[0].id);
+          }
+          // Bloquer le champ — un DIRECTEUR ne peut pas changer de direction
+          this.form.get('directionId')!.disable();
+          this.cdr.markForCheck();
         },
       });
   }
@@ -245,7 +274,8 @@ export class FichePosteFormComponent implements OnInit {
     this.submitting = true;
     this.cdr.markForCheck();
 
-    const v = this.form.value;
+    // getRawValue() inclut les champs disabled (directionId pour les DIRECTEUR)
+    const v = this.form.getRawValue();
     const request: FichePosteRequest = v as FichePosteRequest;
     const call$ = this.isEdit
       ? this.fichePosteService.update(this.editId!, request)
@@ -270,6 +300,6 @@ export class FichePosteFormComponent implements OnInit {
   }
 
   canEdit(): boolean {
-    return this.tokenService.hasAnyRole([RoleName.DRH, RoleName.ADMIN]);
+    return this.tokenService.hasAnyRole([RoleName.DRH, RoleName.ADMIN, RoleName.DIRECTEUR]);
   }
 }

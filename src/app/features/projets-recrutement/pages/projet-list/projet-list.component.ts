@@ -10,6 +10,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
+import { CheckboxModule } from 'primeng/checkbox';
 import { DropdownModule } from 'primeng/dropdown';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
@@ -31,6 +32,7 @@ import {
   ProjetRecrutementResponse,
   ProjetRecrutementSearchDto,
   UpdateObjetCandidatureRequest,
+  ProjetPdfExportRequest,
   STATUT_PROJET_OPTIONS,
   StatutProjet,
   statutProjetLabel,
@@ -38,7 +40,7 @@ import {
 } from '../../models/projet-recrutement.models';
 import { DirectionResponse, DirectionSearchRequest } from '../../../directions/models/direction.models';
 import { PageResponse } from '../../../../core/models/pagination.models';
-import {NgClass} from "@angular/common";
+import { NgClass } from '@angular/common';
 
 // ── Constants ───────────────────────────────────────────────────────────────
 const DIRECTION_PAGE_SIZE = 15;
@@ -53,6 +55,7 @@ const DROPDOWN_SCROLL_SEL = '.p-dropdown-items-wrapper';
   imports: [
     ReactiveFormsModule,
     ButtonModule,
+    CheckboxModule,
     DropdownModule,
     TagModule,
     TooltipModule,
@@ -118,6 +121,32 @@ export class ProjetListComponent implements OnInit {
   detailProjet:     ProjetRecrutementSummaryResponse | null = null;
   detailFull:       ProjetRecrutementResponse        | null = null;
   loadingDetail     = false;
+
+  // ── PDF Export dialog ─────────────────────────────────────────────────────
+  showExportDialog = false;
+  exportingProjet: ProjetRecrutementSummaryResponse | null = null;
+  exportingPdf     = false;
+
+  readonly exportForm = new FormGroup({
+    contexte: new FormGroup({
+      direction:       new FormControl(true, { nonNullable: true }),
+      directeur:       new FormControl(true, { nonNullable: true }),
+      lieuAffectation: new FormControl(true, { nonNullable: true }),
+      nombrePostes:    new FormControl(true, { nonNullable: true }),
+      dateSouhaitee:   new FormControl(true, { nonNullable: true }),
+      priorite:        new FormControl(true, { nonNullable: true }),
+      motif:           new FormControl(true, { nonNullable: true }),
+    }),
+    fiche: new FormGroup({
+      niveauEtudes:            new FormControl(true, { nonNullable: true }),
+      domaineFormation:        new FormControl(true, { nonNullable: true }),
+      anneesExperience:        new FormControl(true, { nonNullable: true }),
+      missionPrincipale:       new FormControl(true, { nonNullable: true }),
+      activitesPrincipales:    new FormControl(true, { nonNullable: true }),
+      competencesTechniques:   new FormControl(true, { nonNullable: true }),
+      competencesManageriales: new FormControl(true, { nonNullable: true }),
+    }),
+  });
 
   // ── Pure helpers ─────────────────────────────────────────────────────────
   readonly statutProjetLabel    = statutProjetLabel;
@@ -367,6 +396,91 @@ export class ProjetListComponent implements OnInit {
     });
   }
 
+  // ── PDF Export ────────────────────────────────────────────────────────────
+
+  openExportDialog(projet: ProjetRecrutementSummaryResponse): void {
+    this.exportingProjet = projet;
+    this.exportForm.reset({
+      contexte: {
+        direction: true, directeur: true, lieuAffectation: true,
+        nombrePostes: true, dateSouhaitee: true, priorite: true, motif: true,
+      },
+      fiche: {
+        niveauEtudes: true, domaineFormation: true, anneesExperience: true,
+        missionPrincipale: true, activitesPrincipales: true,
+        competencesTechniques: true, competencesManageriales: true,
+      },
+    });
+    this.showExportDialog = true;
+    this.cdr.markForCheck();
+  }
+
+  closeExportDialog(): void {
+    this.showExportDialog = false;
+    this.exportingProjet  = null;
+    this.exportingPdf     = false;
+    this.cdr.markForCheck();
+  }
+
+  get allContexteSelected(): boolean {
+    return Object.values(this.exportForm.controls.contexte.controls).every(c => c.value);
+  }
+
+  toggleAllContexte(): void {
+    const next = !this.allContexteSelected;
+    Object.values(this.exportForm.controls.contexte.controls).forEach(c => c.setValue(next));
+  }
+
+  get allFicheSelected(): boolean {
+    return Object.values(this.exportForm.controls.fiche.controls).every(c => c.value);
+  }
+
+  toggleAllFiche(): void {
+    const next = !this.allFicheSelected;
+    Object.values(this.exportForm.controls.fiche.controls).forEach(c => c.setValue(next));
+  }
+
+  downloadPdf(): void {
+    if (!this.exportingProjet) return;
+
+    const raw = this.exportForm.getRawValue();
+    const request: ProjetPdfExportRequest = {
+      contexte: {
+        direction:       raw.contexte.direction,
+        directeur:       raw.contexte.directeur,
+        lieuAffectation: raw.contexte.lieuAffectation,
+        nombrePostes:    raw.contexte.nombrePostes,
+        dateSouhaitee:   raw.contexte.dateSouhaitee,
+        priorite:        raw.contexte.priorite,
+        motif:           raw.contexte.motif,
+      },
+      fiche: raw.fiche,
+    };
+
+    this.exportingPdf = true;
+    this.cdr.markForCheck();
+
+    this.service.exportPdf(this.exportingProjet.id, request)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (blob: Blob) => {
+          const url = URL.createObjectURL(blob);
+          const a   = document.createElement('a');
+          a.href     = url;
+          a.download = `recrutement-${this.exportingProjet!.id}.pdf`;
+          a.click();
+          URL.revokeObjectURL(url);
+          this.exportingPdf = false;
+          this.closeExportDialog();
+        },
+        error: () => {
+          this.exportingPdf = false;
+          this.notification.error('Erreur lors de la génération du PDF');
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
   // ── Helpers ──────────────────────────────────────────────────────────────
   formatDate(iso: string | null): string {
     if (!iso) return '—';
@@ -383,6 +497,3 @@ export class ProjetListComponent implements OnInit {
     this.router.navigate(['/projets-recrutement', projetId, 'candidatures']);
   }
 }
-
-
-

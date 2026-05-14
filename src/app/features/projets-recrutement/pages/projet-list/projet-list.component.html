@@ -250,6 +250,18 @@
                   tooltipPosition="top"
                   (click)="goToCandidatures(projet.id)">
                 </button>
+                @if (isDrhOrAdmin) {
+                  <button
+                    pButton
+                    icon="fa fa-file-pdf"
+                    severity="secondary"
+                    [rounded]="true"
+                    [text]="true"
+                    pTooltip="Exporter en PDF (DG)"
+                    tooltipPosition="top"
+                    (click)="openExportDialog(projet)">
+                  </button>
+                }
                 @if (isDrhOrAdmin && projet.statut === StatutProjet.OUVERT) {
                   <button
                     pButton
@@ -305,7 +317,7 @@
         [first]="currentRequest.page * currentRequest.size"
         [rowsPerPageOptions]="[9, 18, 27]"
         [showCurrentPageReport]="true"
-        currentPageReportTemplate="{first}–{last} sur {totalRecords}"
+        currentPageReportTemplate="{first}\u2013{last} sur {totalRecords}"
         (onPageChange)="onPageChange($event)">
       </p-paginator>
     </div>
@@ -443,6 +455,148 @@
         (click)="closeDetail(); confirmFermer(detailProjet!)">
       </button>
     }
+  </ng-template>
+
+</p-dialog>
+
+<!-- ════════════════════════════════════════════════
+     PDF EXPORT DIALOG
+══════════════════════════════════════════════════ -->
+<p-dialog
+  header="Exporter en PDF — Note de présentation DG"
+  [(visible)]="showExportDialog"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="export-dialog"
+  [style]="{width: '44rem', maxWidth: '95vw'}"
+  (onHide)="closeExportDialog()">
+
+  @if (exportingProjet) {
+    <p class="text-color-secondary text-sm mb-4">
+      <i class="fa fa-file-pdf mr-2 text-primary"></i>
+      <strong>{{ exportingProjet.ficheDePosteIntitule }}</strong>
+      &mdash; sélectionnez les champs à inclure dans le document.
+    </p>
+  }
+
+  <form [formGroup]="exportForm">
+
+    <!-- Section Contexte -->
+    <div class="export-section" formGroupName="contexte">
+      <div class="export-section-header">
+        <span class="export-section-title">
+          <i class="fa fa-file-lines mr-2"></i>I. Contexte de la demande
+        </span>
+        <button
+          pButton
+          [label]="allContexteSelected ? 'Tout désélectionner' : 'Tout sélectionner'"
+          [text]="true"
+          severity="secondary"
+          size="small"
+          (click)="toggleAllContexte()">
+        </button>
+      </div>
+      <div class="export-fields">
+        <label class="export-field">
+          <p-checkbox formControlName="direction" [binary]="true" inputId="ctx-direction"></p-checkbox>
+          <span>Direction</span>
+        </label>
+        <label class="export-field">
+          <p-checkbox formControlName="directeur" [binary]="true" inputId="ctx-directeur"></p-checkbox>
+          <span>Directeur</span>
+        </label>
+        <label class="export-field">
+          <p-checkbox formControlName="nombrePostes" [binary]="true" inputId="ctx-postes"></p-checkbox>
+          <span>Nombre de postes</span>
+        </label>
+        <label class="export-field">
+          <p-checkbox formControlName="lieuAffectation" [binary]="true" inputId="ctx-lieu"></p-checkbox>
+          <span>Lieu d'affectation</span>
+        </label>
+        <label class="export-field">
+          <p-checkbox formControlName="dateSouhaitee" [binary]="true" inputId="ctx-date"></p-checkbox>
+          <span>Date souhaitée</span>
+        </label>
+        <label class="export-field">
+          <p-checkbox formControlName="priorite" [binary]="true" inputId="ctx-priorite"></p-checkbox>
+          <span>Priorité</span>
+        </label>
+        <label class="export-field">
+          <p-checkbox formControlName="motif" [binary]="true" inputId="ctx-motif"></p-checkbox>
+          <span>Motif de la demande</span>
+        </label>
+      </div>
+    </div>
+
+    <p-divider></p-divider>
+
+    <!-- Section Fiche de poste -->
+    <div class="export-section" formGroupName="fiche">
+      <div class="export-section-header">
+        <span class="export-section-title">
+          <i class="fa fa-id-card mr-2"></i>III. Profil et fiche de poste
+        </span>
+        <button
+          pButton
+          [label]="allFicheSelected ? 'Tout désélectionner' : 'Tout sélectionner'"
+          [text]="true"
+          severity="secondary"
+          size="small"
+          (click)="toggleAllFiche()">
+        </button>
+      </div>
+      <div class="export-fields">
+        <label class="export-field">
+          <p-checkbox formControlName="niveauEtudes" [binary]="true" inputId="fp-niveau"></p-checkbox>
+          <span>Niveau d'études</span>
+        </label>
+        <label class="export-field">
+          <p-checkbox formControlName="domaineFormation" [binary]="true" inputId="fp-domaine"></p-checkbox>
+          <span>Domaine de formation</span>
+        </label>
+        <label class="export-field">
+          <p-checkbox formControlName="anneesExperience" [binary]="true" inputId="fp-exp"></p-checkbox>
+          <span>Années d'expérience</span>
+        </label>
+        <label class="export-field">
+          <p-checkbox formControlName="missionPrincipale" [binary]="true" inputId="fp-mission"></p-checkbox>
+          <span>Mission principale</span>
+        </label>
+        <label class="export-field">
+          <p-checkbox formControlName="activitesPrincipales" [binary]="true" inputId="fp-activites"></p-checkbox>
+          <span>Activités principales</span>
+        </label>
+        <label class="export-field">
+          <p-checkbox formControlName="competencesTechniques" [binary]="true" inputId="fp-tech"></p-checkbox>
+          <span>Compétences techniques</span>
+        </label>
+        <label class="export-field">
+          <p-checkbox formControlName="competencesManageriales" [binary]="true" inputId="fp-mgr"></p-checkbox>
+          <span>Compétences managériales</span>
+        </label>
+      </div>
+    </div>
+
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      label="Annuler"
+      icon="fa fa-times"
+      severity="secondary"
+      [disabled]="exportingPdf"
+      (click)="closeExportDialog()">
+    </button>
+    <button
+      pButton
+      label="Générer le PDF"
+      icon="fa fa-file-pdf"
+      severity="primary"
+      [loading]="exportingPdf"
+      (click)="downloadPdf()">
+    </button>
   </ng-template>
 
 </p-dialog>

@@ -288,7 +288,11 @@ export class FichePosteListComponent implements OnInit {
     return !!(intitulePoste || directionId != null || niveauEtudes != null);
   }
 
-  canAddOrEdit(): boolean {
+  canCreate(): boolean {
+    return this.tokenService.hasAnyRole([RoleName.ADMIN, RoleName.DRH, RoleName.DIRECTEUR]);
+  }
+
+  canDelete(): boolean {
     return this.tokenService.hasAnyRole([RoleName.ADMIN, RoleName.DRH]);
   }
 
