@@ -286,6 +286,69 @@
       </div>
     }
 
+    <!-- ══ Parcours candidat (formations + expériences) ══ -->
+    @if (candidature.formations.length || candidature.experiences.length) {
+      <div class="cd-parcours-grid">
+
+        @if (candidature.formations.length) {
+          <div class="cd-parcours-card">
+            <h3 class="cd-parcours-title">
+              <span class="cd-parcours-icon cd-parcours-icon--formation">
+                <i class="fa fa-graduation-cap"></i>
+              </span>
+              Formations
+              <span class="cd-points-count">{{ candidature.formations.length }}</span>
+            </h3>
+            <ul class="cd-parcours-list">
+              @for (f of candidature.formations; track $index) {
+                <li class="cd-parcours-item">
+                  <span class="cd-parcours-item-main">{{ f.titre || '—' }}</span>
+                  @if (f.ecole || f.dateObtention) {
+                    <span class="cd-parcours-item-meta">
+                      @if (f.ecole) {
+                        <span><i class="fa fa-school"></i>{{ f.ecole }}</span>
+                      }
+                      @if (f.dateObtention) {
+                        <span><i class="fa fa-calendar-check"></i>{{ f.dateObtention }}</span>
+                      }
+                    </span>
+                  }
+                </li>
+              }
+            </ul>
+          </div>
+        }
+
+        @if (candidature.experiences.length) {
+          <div class="cd-parcours-card">
+            <h3 class="cd-parcours-title">
+              <span class="cd-parcours-icon cd-parcours-icon--experience">
+                <i class="fa fa-briefcase"></i>
+              </span>
+              Expériences professionnelles
+              <span class="cd-points-count">{{ candidature.experiences.length }}</span>
+            </h3>
+            <ul class="cd-parcours-list">
+              @for (e of candidature.experiences; track $index) {
+                <li class="cd-parcours-item">
+                  <span class="cd-parcours-item-main">{{ e.titre || '—' }}</span>
+                  <span class="cd-parcours-item-meta">
+                    @if (e.entreprise) {
+                      <span><i class="fa fa-building"></i>{{ e.entreprise }}</span>
+                    }
+                    @if (e.periode) {
+                      <span><i class="fa fa-calendar-days"></i>{{ e.periode }}</span>
+                    }
+                  </span>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+
+      </div>
+    }
+
     <!-- ══ Justification IA ══ -->
     @if (candidature.justificationIa && candidature.statut !== StatutCandidature.ERREUR) {
       <div class="cd-justification-card">

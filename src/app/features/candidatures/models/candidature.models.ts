@@ -32,6 +32,22 @@ export const RECOMMANDATION_OPTIONS: { label: string; value: RecommandationIA }[
   { label: 'Ne correspond pas', value: RecommandationIA.NE_CORRESPOND_PAS },
 ];
 
+// ── Parcours candidat — extrait du CV par l'IA (miroir backend) ────────────
+
+/** Formation / diplôme extrait du CV. Champs null si l'IA ne les a pas trouvés. */
+export interface Formation {
+  titre:         string | null;
+  ecole:         string | null;
+  dateObtention: string | null;   // texte brut ("2020", "Juin 2021"…)
+}
+
+/** Expérience professionnelle extraite du CV. Champs null si non trouvés. */
+export interface ExperienceProfessionnelle {
+  titre:      string | null;
+  entreprise: string | null;
+  periode:    string | null;      // texte brut ("2019 - 2021", "depuis 2022"…)
+}
+
 // ── Response DTO ───────────────────────────────────────────────────────────
 
 export interface CandidatureResponse {
@@ -48,6 +64,10 @@ export interface CandidatureResponse {
   nomCandidat:       string | null;
   emailCandidat:     string | null;
   telephoneCandidat: string | null;
+
+  // Parcours candidat — listes vides tant que le pipeline n'a pas extrait le CV
+  formations:  Formation[];
+  experiences: ExperienceProfessionnelle[];
 
   // Évaluation IA — null si non encore évalué
   scoreMatching:       number | null;
